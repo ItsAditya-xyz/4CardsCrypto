@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+🎮 4 Cards Game — Rules
+Players & Cards
 
-## Getting Started
+4 players: Player A, B, C, D
 
-First, run the development server:
+Total deck: 17 cards
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+4 Dogs 🐶 ("1")
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4 Cats 🐱 ("2")
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+4 Bunnies 🐰 ("3")
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4 Pandas 🐼 ("4")
 
-## Learn More
+1 Null ❌ ("0")
 
-To learn more about Next.js, take a look at the following resources:
+Card Distribution
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+One player (always Player A for now) gets 5 cards: 4 normal + the Null card
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Others get 4 cards each
 
-## Deploy on Vercel
+Goal
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Be the first to collect 4 cards of the same type (excluding Null)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This immediately ends the game and declares the winner
+
+Game Flow
+
+Players take turns clockwise
+
+On your turn, you pass one card to the next player
+
+Special Rules
+
+🛑 Null Rule: The Null card cannot be passed by the player holding it on the first move of the game
+
+🔁 Repeat Block Rule: You cannot pass back the card you just received unless you have more than one of that card
+
+Winning
+
+As soon as a player has 4 cards of the same type, the game ends with a winner screen
+
+Restart
+
+After the win screen, players can click "Restart Game" to shuffle and begin a new round
+
+Let me know if you'd like to show these in-game via a rules button or modal!

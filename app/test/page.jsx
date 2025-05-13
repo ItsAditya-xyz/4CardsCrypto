@@ -14,7 +14,7 @@ const cardTypes = [
 const generateCardImage = (id) => cardTypes.find(c => c.id === parseInt(id)) || cardTypes[4]
 
 export default function TestGamePage() {
-  const [players, setPlayers] = useState(() => {
+  const createInitialPlayers = () => {
     const fullDeck = [
       "1", "1", "1", "1",
       "2", "2", "2", "2",
@@ -44,24 +44,36 @@ export default function TestGamePage() {
     }
 
     return [
-      { name: "Player A", hand: playerHands[0] },
+      { name: "Player A", hand: player0Hand },
       { name: "Player B", hand: playerHands[1] },
       { name: "Player C", hand: playerHands[2] },
       { name: "Player D", hand: playerHands[3] },
     ]
-  })
+  }
 
+  const [players, setPlayers] = useState(createInitialPlayers)
   const [currentTurn, setCurrentTurn] = useState(0)
   const [lastPassedCard, setLastPassedCard] = useState(null)
   const [lastReceiver, setLastReceiver] = useState(null)
+  const [winner, setWinner] = useState(null)
+
+  const resetGame = () => {
+    setPlayers(createInitialPlayers())
+    setCurrentTurn(0)
+    setLastPassedCard(null)
+    setLastReceiver(null)
+    setWinner(null)
+  }
 
   const passCard = (playerIndex, cardIndex) => {
+    if (winner !== null) return
+
     const currentPlayer = players[playerIndex]
     const nextPlayerIndex = (playerIndex + 1) % 4
     const card = currentPlayer.hand[cardIndex]
-    const isGameStart = currentPlayer.hand.length === 5
+    const isFirstTurn = playerIndex === 0 && lastPassedCard === null
 
-    if (isGameStart && card === "0") {
+    if (isFirstTurn && card === "0") {
       alert("❌ You can't pass the null card on the first move.")
       return
     }
@@ -81,44 +93,91 @@ export default function TestGamePage() {
     newPlayers[playerIndex].hand.splice(cardIndex, 1)
     newPlayers[nextPlayerIndex].hand.push(card)
 
+    const counts = newPlayers[nextPlayerIndex].hand.reduce((acc, val) => {
+      acc[val] = (acc[val] || 0) + 1
+      return acc
+    }, {})
+
+    const hasWon = Object.values(counts).some(count => count === 4)
+
     setPlayers(newPlayers)
     setLastPassedCard(card)
     setLastReceiver(nextPlayerIndex)
     setCurrentTurn(nextPlayerIndex)
+
+    if (hasWon) {
+      setWinner(newPlayers[nextPlayerIndex].name)
+    }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col gap-6 items-center justify-center p-4">
-      <h1 className="text-2xl font-bold mb-4">🃏 4 Cards Test Game</h1>
+  const me = 0
+  const getRelativeIndex = (index) => (index - me + 4) % 4
+  const positionClass = ["items-end", "items-start justify-start", "items-start", "items-start justify-end"]
 
-      <div className="grid grid-cols-2 gap-12 max-w-6xl">
-        {players.map((player, index) => (
-          <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className={`text-lg font-semibold mb-2 ${index === currentTurn ? "text-green-400" : ""}`}>
-              {player.name} {index === currentTurn && "(Your Turn)"}
-            </h2>
-            <div className="flex gap-2">
-              {player.hand.map((card, cardIdx) => {
-                const cardInfo = generateCardImage(card)
-                return (
-                  <div
-                    key={cardIdx}
-                    className={`relative border rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition ${
-                      index === currentTurn ? "hover:border-green-500" : "opacity-50 cursor-not-allowed"
-                    }`}
-                    onClick={() => index === currentTurn && passCard(index, cardIdx)}
-                  >
-                    <Image src={cardInfo.image} alt={cardInfo.name} width={80} height={120} />
-                    <div className="absolute bottom-0 w-full text-center text-xs bg-black/60 py-1">
-                      {cardInfo.name}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+  return (
+    <div
+      className="min-h-screen text-white flex flex-col gap-6 items-center justify-center p-4"
+      style={{
+        backgroundImage: 'url(/assets/background.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <h1 className="text-4xl font-extrabold text-yellow-300 drop-shadow-sm">4 Cards Test Game</h1>
+      <h2 className="text-xl font-semibold text-green-200 mb-6">{players[currentTurn].name}&apos;s Turn</h2>
+
+      {winner && (
+        <div className="text-center bg-black/60 p-6 rounded-lg">
+          <h2 className="text-3xl font-bold text-green-400">🎉 {winner} wins the game!</h2>
+          <button
+            onClick={resetGame}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Restart Game
+          </button>
+        </div>
+      )}
+
+      {!winner && (
+        <div className="relative w-full px-10 h-[75vh]  flex flex-col justify-between">
+          {players.map((player, index) => {
+            const pos = getRelativeIndex(index)
+            const positionStyles =
+              pos === 0 ? "absolute bottom-0 left-1/2 -translate-x-1/2" :
+              pos === 1 ? "absolute left-0 top-1/2 -translate-y-1/2" :
+              pos === 2 ? "absolute top-0 left-1/2 -translate-x-1/2" :
+              "absolute right-0 top-1/2 -translate-y-1/2"
+
+            return (
+             <div key={index} className={`${positionStyles} bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md w-fit `}>
+                <h2 className={`text-md font-bold mb-2 ${index === currentTurn ? "text-yellow-300" : "text-white"}`}>
+                  {player.name}
+                </h2>
+                <div className="flex gap-3 justify-center flex-row">
+                  {player.hand.map((card, cardIdx) => {
+                    const cardInfo = generateCardImage(card)
+                    const isCurrent = index === currentTurn
+                    return (
+                      <div
+                        key={cardIdx}
+                        className={`relative border-2 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-all duration-200 ${
+                          isCurrent ? "hover:border-yellow-400" : "opacity-60 cursor-not-allowed border-transparent"
+                        }`}
+                        onClick={() => isCurrent && passCard(index, cardIdx)}
+                      >
+                        <Image src={cardInfo.image} alt={cardInfo.name} width={200} height={300} />
+                        <div className="absolute top-0 left-0 bg-black/50 text-yellow-300 text-xs px-2 py-0.5 rounded-br-md">
+                          {cardInfo.id !== 0 ? cardInfo.id : "NULL"}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
