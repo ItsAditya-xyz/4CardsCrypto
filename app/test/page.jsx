@@ -17,22 +17,10 @@ const generateCardImage = (id) =>
 export default function TestGamePage() {
   const createInitialPlayers = () => {
     const fullDeck = [
-      "1",
-      "1",
-      "1",
-      "1",
-      "2",
-      "2",
-      "2",
-      "2",
-      "3",
-      "3",
-      "3",
-      "3",
-      "4",
-      "4",
-      "4",
-      "4",
+      "1", "1", "1", "1",
+      "2", "2", "2", "2",
+      "3", "3", "3", "3",
+      "4", "4", "4", "4",
       "0",
     ];
 
@@ -105,9 +93,7 @@ export default function TestGamePage() {
     if (isPassingBackSameCard) {
       const count = currentPlayer.hand.filter((c) => c === card).length;
       if (count < 2) {
-        alert(
-          "❌ You can't pass back the card just received unless you have more than one."
-        );
+        alert("❌ You can't pass back the card just received unless you have more than one.");
         return;
       }
     }
@@ -165,8 +151,7 @@ export default function TestGamePage() {
       ) : (
         <>
           {!isMobile ? (
-            // 🖥️ Desktop layout
-            <div className='relative w-full  h-[75vh] bg-red-500 '>
+            <div className='relative w-[90vw] h-[80vh]   rounded-xl overflow-hidden'>
               {players.map((player, index) => {
                 const pos = getRelativeIndex(index);
                 const layoutStyle =
@@ -184,31 +169,21 @@ export default function TestGamePage() {
                 return (
                   <div
                     key={index}
-                    className={`${layoutStyle} bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md `}>
-                    <h2
-                      className={`text-md font-bold mb-2 ${
-                        isCurrent ? "text-yellow-300" : "text-white"
-                      }`}>
+                    className={`${layoutStyle} bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md`}>
+                    <h2 className={`text-md font-bold mb-2 ${isCurrent ? "text-yellow-300" : "text-white"}`}>
                       {player.name}
                     </h2>
-                    <div
-                      className={`flex ${
-                        isPlayerA ? "flex-row" : "flex-wrap justify-center"
-                      } gap-3`}>
+                    <div className={`flex ${isPlayerA ? "flex-row" : "flex-wrap justify-center"} gap-3`}>
                       {player.hand.map((card, cardIdx) => {
                         const cardInfo = generateCardImage(card);
                         return (
                           <div
                             key={cardIdx}
                             className={`border-2 rounded-lg overflow-hidden transition-all duration-200 ${
-                              isCurrent
-                                ? "hover:border-yellow-400 cursor-pointer"
-                                : "opacity-60 border-transparent"
+                              isCurrent ? "hover:border-yellow-400 cursor-pointer" : "opacity-60 border-transparent"
                             }`}
-                            onClick={() =>
-                              isCurrent && passCard(index, cardIdx)
-                            }>
-                            <div className='w-[200px] h-[280px] flex items-center justify-center overflow-hidden rounded-lg border-2'>
+                            onClick={() => isCurrent && passCard(index, cardIdx)}>
+                            <div className='w-[11vh] h-[17vh] flex items-center justify-center overflow-hidden rounded-lg border-2'>
                               <Image
                                 src={cardInfo.image}
                                 alt={cardInfo.name}
@@ -226,39 +201,26 @@ export default function TestGamePage() {
               })}
             </div>
           ) : (
-            // 📱 Mobile layout
             <div className='grid grid-cols-2 gap-4 w-full max-w-[440px] mx-auto'>
               {players.map((player, index) => {
                 const isCurrent = index === currentTurn;
-                const isPlayerA = index === 0;
-
                 return (
                   <div
                     key={index}
                     className='bg-[#0b1e2e]/80 p-2 rounded-lg shadow w-full flex flex-col items-center'>
-                    <p
-                      className={`text-sm font-bold mb-2 ${
-                        isCurrent ? "text-yellow-300" : "text-white"
-                      }`}>
+                    <p className={`text-sm font-bold mb-2 ${isCurrent ? "text-yellow-300" : "text-white"}`}>
                       {player.name}
                     </p>
-                    <div
-                      className={`flex ${
-                        "flex-wrap justify-center"
-                      } gap-1`}>
+                    <div className='flex flex-wrap justify-center gap-1'>
                       {player.hand.map((card, cardIdx) => {
                         const cardInfo = generateCardImage(card);
                         return (
                           <div
                             key={cardIdx}
                             className={`border-2 rounded-md overflow-hidden transition-all duration-200 ${
-                              isCurrent
-                                ? "hover:border-yellow-400 cursor-pointer"
-                                : "opacity-50 border-transparent"
+                              isCurrent ? "hover:border-yellow-400 cursor-pointer" : "opacity-50 border-transparent"
                             }`}
-                            onClick={() =>
-                              isCurrent && passCard(index, cardIdx)
-                            }>
+                            onClick={() => isCurrent && passCard(index, cardIdx)}>
                             <Image
                               src={cardInfo.image}
                               alt={cardInfo.name}
