@@ -22,7 +22,8 @@ export async function POST(req) {
 
   const playerInfo = {
     id,
-    username: user_metadata?.full_name || "Anon",
+    user_name: user_metadata?.user_name || "Anon",
+    full_name: user_metadata?.full_name || "Anon",
     avatar_url: user_metadata?.avatar_url || "/default-pfp.png",
   }
 

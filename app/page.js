@@ -1,115 +1,116 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import supabase from "@/lib/supabaseClient"
-import { FaTwitter } from "react-icons/fa"
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import supabase from "@/lib/supabaseClient";
+import Header from "@/components/header";
 
 export default function Home() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data?.user || null)
-    }
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user || null);
+    };
 
-    getUser()
+    getUser();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-    })
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
 
     return () => {
-      listener?.subscription?.unsubscribe()
-    }
-  }, [])
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "twitter",
       options: {
-        redirectTo: `${location.origin}/`, // 👈 redirects back to home
+        redirectTo: `${location.origin}/`,
       },
-    })
-  }
+    });
+  };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-  }
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   const handleCreateGame = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await fetch("/api/create-game-room", {
         method: "POST",
         credentials: "include",
-      })
+      });
 
-      if (!res.ok) throw new Error("Failed to create game")
+      if (!res.ok) throw new Error("Failed to create game");
 
-      const data = await res.json()
-      router.push(`/game/${data.room.id}`)
+      const data = await res.json();
+      router.push(`/game/${data.room.id}`);
     } catch (err) {
-      console.error(err)
-      alert("Failed to create game room.")
+      console.error(err);
+      alert("Failed to create game room.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const username = user?.user_metadata?.full_name || "Anon"
-  const avatar = user?.user_metadata?.avatar_url || "/default-pfp.png"
+  const username = user?.user_metadata?.full_name || "Anon";
+  const avatar = user?.user_metadata?.avatar_url || "/default-pfp.png";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white p-8">
-      <Image src="/logo.png" alt="Game Logo" width={100} height={100} />
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center text-white  gap-6"
+      style={{
+        backgroundImage: "url(/assets/background.png)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <Header />
+      <Image src="/assets/logo.png" alt="Game Logo" width={500} height={400} className="" />
 
-      <h1 className="text-4xl font-bold mt-4">4 Cards Crypto Game</h1>
-      <p className="text-gray-400 text-center max-w-md mt-2">
-        A fun 4-player strategic card game where the winner takes the crypto pot.
-        Collect 4 of a kind, pass wisely, and outsmart your friends.
+      <p className="text-center text-green-100 max-w-md drop-shadow-sm ">
+        A 4-player strategic card game. Collect 4 of a kind, pass cards wisely,
+        and outsmart your friends to win the crypto pot 💰
       </p>
 
       {user ? (
-        <div className="flex flex-col items-center gap-4 mt-6">
-          <div className="flex items-center gap-3">
-            <img
-              src={avatar}
-              alt="avatar"
-              className="w-10 h-10 rounded-full border border-gray-700"
-            />
-            <p className="text-xl font-semibold">GM, {username} 👋</p>
-          </div>
-
-          <button
-            onClick={handleCreateGame}
-            disabled={loading}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full transition disabled:opacity-50"
-          >
-            {loading ? "Creating Game..." : "Create Game Room"}
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition"
-          >
-            Logout
-          </button>
-        </div>
-      ) : (
         <button
-          onClick={handleLogin}
-          className="mt-6 flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition"
+          onClick={handleCreateGame}
+          disabled={loading}
+          className="mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer"
         >
-          <FaTwitter size={20} />
-          Login with Twitter
+          <Image
+            src="/assets/createGameRoom.png"
+            alt="Create Game"
+            width={300}
+            height={80}
+            className="transition-all duration-200 ease-in-out 
+             group-hover:scale-105 group-hover:-translate-y-1 
+             group-hover:opacity-90 group-active:scale-95"
+          />
+        </button>
+      ) : (
+        <button onClick={handleLogin} className="mt-3 inline-block">
+          <Image
+            src="/assets/loginwithTwitter.png"
+            alt="Log in with Twitter"
+            width={300}
+            height={80}
+            className="transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer"
+          />
         </button>
       )}
     </div>
-  )
+  );
 }
