@@ -24,19 +24,17 @@ export default function GameView({
 
   if (isMobile) {
     return (
-      <div className="w-full min-h-[80vh] grid grid-cols-2 gap-4 p-4 justify-items-center">
+      <div className="w-full min-h-[100vh] grid grid-cols-2 justify-items-center">
         {getRelativePlayers().map((player, pos) => {
           const playerInfo = getPlayerInfo(player.user_id);
           const isCurrentTurn =
             gameRoom.game_state.turn_index === (meIndex + pos) % 4;
           const isMe = player.user_id === user.id;
-
+  
           return (
             <div
               key={player.user_id}
-              className={`w-full max-w-[180px] bg-[#0b1e2e]/80 p-3 rounded-xl shadow-md flex flex-col items-center relative transition-transform duration-300 ${
-                isCurrentTurn ? "ring-4 ring-yellow-400 scale-[1.02]" : ""
-              }`}
+              className="w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300"
             >
               <div className="flex flex-col items-center mb-2">
                 <Image
@@ -55,7 +53,7 @@ export default function GameView({
                   </p>
                 )}
               </div>
-
+  
               <div className="grid grid-cols-2 gap-2">
                 {(gameRoom.status === "completed" || isMe
                   ? player.hand
@@ -65,10 +63,10 @@ export default function GameView({
                     isMe &&
                     gameRoom.game_state.turn_index === meIndex &&
                     gameRoom.status === "running";
-
+  
                   const handleCardClick = async () => {
                     if (!isMyTurn || card === null) return;
-
+  
                     const res = await fetch("/api/pass-card", {
                       method: "POST",
                       headers: {
@@ -76,13 +74,13 @@ export default function GameView({
                       },
                       body: JSON.stringify({ roomId: id, card }),
                     });
-
+  
                     const data = await res.json();
                     if (!res.ok) {
                       alert(data.error || "Failed to pass card.");
                     }
                   };
-
+  
                   return (
                     <div
                       key={cardIdx}
@@ -102,7 +100,11 @@ export default function GameView({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-800" />
+                        <div
+                          className={`w-full h-full bg-gray-800 relative overflow-hidden rounded-md ${
+                            isCurrentTurn ? "shimmer" : ""
+                          }`}
+                        />
                       )}
                     </div>
                   );
@@ -114,10 +116,11 @@ export default function GameView({
       </div>
     );
   }
+  
 
   // 👇 Desktop layout continues as-is
   return (
-    <div className="relative w-full h-[80vh] flex items-center justify-center">
+    <div className="relative w-full h-[90vh] flex items-center justify-center mt-10">
       {getRelativePlayers().map((player, pos) => {
         const playerInfo = getPlayerInfo(player.user_id);
         const globalIndex = (meIndex + pos) % 4;

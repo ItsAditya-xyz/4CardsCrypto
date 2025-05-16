@@ -58,3 +58,31 @@ body {
   border: 4px solid #173a48; /* Tailwind yellow-400 */
   border-radius: 1rem;
 }
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 255, 0.1),
+    rgba(0, 204, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  pointer-events: none;
+  border-radius: inherit;
+}

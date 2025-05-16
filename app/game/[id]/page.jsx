@@ -184,7 +184,7 @@ export default function GameRoomPage() {
         fill
         className="absolute inset-0 object-cover opacity-70 z-0"
       />
-      <div className="relative z-10 p-6">
+      <div className="relative z-10 ">
         {!inGame ? (
           <LobbyView
             gameRoom={gameRoom}
