@@ -25,7 +25,7 @@ export async function POST(req) {
   }
 
   const gameState = room.game_state;
-  const players = gameState.players;
+  const players = structuredClone(gameState.players); // 🔒 Prevent mutation bugs
   const currentIndex = gameState.turn_index;
   const currentPlayer = players[currentIndex];
 
@@ -36,6 +36,12 @@ export async function POST(req) {
     );
   }
 
+  // 🚫 Only room players can act
+  if (!players.some(p => p.user_id === user.id)) {
+    return NextResponse.json({ error: "You are not a player in this room" }, { status: 403 });
+  }
+
+  // 🚫 Only current player can act
   if (currentPlayer.user_id !== user.id) {
     return NextResponse.json({ error: "Not your turn" }, { status: 403 });
   }
@@ -63,32 +69,31 @@ export async function POST(req) {
     );
   }
 
-  // Validate player has the card
+  // 🃏 Validate player has the card
   const cardIndex = hand.indexOf(card);
   if (cardIndex === -1) {
     return NextResponse.json({ error: "Card not in hand" }, { status: 400 });
   }
 
-  // 🚚 Pass card to next player (clockwise)
+  // 🧠 Compute next player
   const nextIndex = (currentIndex + 1) % players.length;
   const nextPlayer = players[nextIndex];
 
-  // Remove card from sender
-  hand.splice(cardIndex, 1);
+  // ✂️ Remove card from sender
+  currentPlayer.hand = [...hand.slice(0, cardIndex), ...hand.slice(cardIndex + 1)];
 
-  // Add to receiver
+  // ➕ Add card to receiver
   nextPlayer.hand.push(card);
   nextPlayer.last_received = card;
 
-  // 🏁 Win Condition: check if next player has 4 of same card
+  // 🏆 Check win condition
   const counts = nextPlayer.hand.reduce((acc, val) => {
     acc[val] = (acc[val] || 0) + 1;
     return acc;
   }, {});
-
   const winner = Object.values(counts).some((count) => count === 4);
 
-  // Update game state
+  // ♻️ Update state
   const newGameState = {
     ...gameState,
     turn_index: nextIndex,
@@ -100,18 +105,17 @@ export async function POST(req) {
 
   const updatePayload = {
     game_state: newGameState,
+    ...(winner && { status: "completed" }),
   };
 
-  if (winner) {
-    updatePayload.status = "completed";
-  }
-
   const { error: updateError } = await supabase
-    .from("game_rooms")
-    .update(updatePayload)
-    .eq("id", roomId);
+  .from("game_rooms")
+  .update(updatePayload)
+  .eq("id", roomId)
+  .filter("game_state->>turn_index", "eq", String(currentIndex)); // ✅ Fixed
 
   if (updateError) {
+    console.error("Error updating game room:", updateError);
     return NextResponse.json(
       { error: "Failed to update game" },
       { status: 500 }
