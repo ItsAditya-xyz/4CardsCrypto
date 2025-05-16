@@ -26,16 +26,17 @@ export async function POST(req) {
     return NextResponse.json({ error: "Game room not found" }, { status: 404 });
   }
 
-  // Sanitize game_state if exists
+  // Safely sanitize game_state if it exists and has players
   let safeGameState = null;
-  if (room.game_state) {
+
+  if (room.game_state && Array.isArray(room.game_state.players)) {
     safeGameState = {
       ...room.game_state,
       players: room.game_state.players.map((p) => {
         if (p.user_id === user.id) return p;
         return {
           ...p,
-          hand: Array(p.hand.length).fill(null), // or omit entirely
+          hand: Array.isArray(p.hand) ? Array(p.hand.length).fill(null) : [],
         };
       }),
     };
