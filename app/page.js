@@ -103,7 +103,7 @@ export default function Home() {
       ) : (
         <button onClick={handleLogin} className="mt-3 inline-block">
           <Image
-            src="/assets/loginwithTwitter.png"
+            src="/assets/loginwithTwitter2.png"
             alt="Log in with Twitter"
             width={300}
             height={80}
