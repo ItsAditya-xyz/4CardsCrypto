@@ -148,8 +148,24 @@ export async function POST(req) {
     );
   }
 
+  // Filter game state to only expose current user's hand
+  let filteredGameState = gameState;
+  if (gameState) {
+    filteredGameState = {
+      ...gameState,
+      players: gameState.players.map((p) =>
+        p.user_id === user.id
+          ? p
+          : {
+              ...p,
+              hand: Array(p.hand.length).fill(null),
+            }
+      ),
+    };
+  }
+
   return NextResponse.json(
-    { message: "Joined successfully", game_state: gameState },
+    { message: "Joined successfully", game_state: filteredGameState },
     { status: 200 }
   );
 }
