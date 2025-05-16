@@ -182,7 +182,7 @@ export default function GameRoomPage() {
         src="/assets/background.png"
         alt="Background"
         fill
-        className="absolute inset-0 object-cover opacity-30 z-0"
+        className="absolute inset-0 object-cover opacity-70 z-0"
       />
       <div className="relative z-10 p-6">
         {!inGame ? (
@@ -204,6 +204,7 @@ export default function GameRoomPage() {
             getRelativePlayers={getRelativePlayers}
             getPlayerInfo={getPlayerInfo}
             id={id}
+            winnerId={winnerId}
           />
         )}
       </div>

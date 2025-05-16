@@ -1,5 +1,6 @@
-// components/GameView.jsx
 "use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function GameView({
@@ -10,7 +11,111 @@ export default function GameView({
   getRelativePlayers,
   getPlayerInfo,
   id,
+  winnerId,
 }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="w-full min-h-[80vh] grid grid-cols-2 gap-4 p-4 justify-items-center">
+        {getRelativePlayers().map((player, pos) => {
+          const playerInfo = getPlayerInfo(player.user_id);
+          const isCurrentTurn =
+            gameRoom.game_state.turn_index === (meIndex + pos) % 4;
+          const isMe = player.user_id === user.id;
+
+          return (
+            <div
+              key={player.user_id}
+              className={`w-full max-w-[180px] bg-[#0b1e2e]/80 p-3 rounded-xl shadow-md flex flex-col items-center relative transition-transform duration-300 ${
+                isCurrentTurn ? "ring-4 ring-yellow-400 scale-[1.02]" : ""
+              }`}
+            >
+              <div className="flex flex-col items-center mb-2">
+                <Image
+                  src={playerInfo?.avatar_url || "/default-pfp.png"}
+                  alt="avatar"
+                  width={40}
+                  height={40}
+                  className="rounded-full border border-white/30"
+                />
+                <p className="text-sm text-white mt-1 truncate text-center max-w-[100px]">
+                  @{playerInfo?.user_name || "player"}
+                </p>
+                {winnerId === player.user_id && (
+                  <p className="text-xs text-yellow-400 font-bold animate-bounce mt-1">
+                    🏆 Winner!
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {(gameRoom.status === "completed" || isMe
+                  ? player.hand
+                  : Array(player.hand.length).fill(null)
+                ).map((card, cardIdx) => {
+                  const isMyTurn =
+                    isMe &&
+                    gameRoom.game_state.turn_index === meIndex &&
+                    gameRoom.status === "running";
+
+                  const handleCardClick = async () => {
+                    if (!isMyTurn || card === null) return;
+
+                    const res = await fetch("/api/pass-card", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ roomId: id, card }),
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) {
+                      alert(data.error || "Failed to pass card.");
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={cardIdx}
+                      onClick={handleCardClick}
+                      className={`rounded-md overflow-hidden border-2 bg-black/60 transition-all duration-200 w-[80px] h-[110px] md:w-[100px] md:h-[140px] ${
+                        isMyTurn
+                          ? "hover:scale-105 cursor-pointer border-yellow-400"
+                          : "opacity-50 border-white/20"
+                      }`}
+                    >
+                      {card !== null ? (
+                        <Image
+                          src={`/assets/${cardAssets[String(card)]}`}
+                          alt="card"
+                          width={100}
+                          height={140}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 👇 Desktop layout continues as-is
   return (
     <div className="relative w-full h-[80vh] flex items-center justify-center">
       {getRelativePlayers().map((player, pos) => {
@@ -31,7 +136,7 @@ export default function GameView({
         return (
           <div key={player.user_id} className={`${layoutStyle}`}>
             <div
-              className={`p-1 rounded-2xl transition-all duration-300 ${
+              className={` rounded-2xl transition-all duration-300 ${
                 isCurrentTurn ? "ring-animation" : ""
               }`}
             >
