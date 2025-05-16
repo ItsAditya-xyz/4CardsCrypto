@@ -21,34 +21,50 @@ export default function GameRoomPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
+        localStorage.setItem("pendingGameId", id);
         router.push("/login");
         return;
       }
 
       setUser(user);
 
+      // Fetch room
       const { data: roomData, error } = await supabase
         .from("game_rooms")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (error) {
+      if (error || !roomData) {
         console.error("Error fetching room:", error);
         return;
       }
 
       const isUserInRoom = roomData.players?.some((p) => p.id === user.id);
 
+      // Join if not already in room
       if (!isUserInRoom) {
-        await fetch("/api/join-game-room", {
+        const res = await fetch("/api/join-game-room", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ roomId: id }),
         });
+
+        if (res.ok) {
+          // Refetch updated room after joining
+          const { data: updatedRoom } = await supabase
+            .from("game_rooms")
+            .select("*")
+            .eq("id", id)
+            .single();
+          setGameRoom(updatedRoom);
+        } else {
+          console.error("Join room failed");
+        }
+      } else {
+        setGameRoom(roomData);
       }
 
-      setGameRoom(roomData);
       setLoading(false);
     };
 
@@ -117,7 +133,7 @@ export default function GameRoomPage() {
         {/* Player Cards */}
         <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {gameRoom.players?.map((player, index) => {
-            const playerColors = [ "#da594b", "#539a97", "#f3bf56", "#538da3",];
+            const playerColors = ["#da594b", "#539a97", "#f3bf56", "#538da3"];
             const bgColor = playerColors[index % playerColors.length];
 
             return (
@@ -171,8 +187,8 @@ export default function GameRoomPage() {
               width={250}
               height={80}
               className="transition-all duration-200 ease-in-out 
-       group-hover:scale-105 group-hover:-translate-y-1 
-       group-hover:opacity-90 group-active:scale-95"
+             group-hover:scale-105 group-hover:-translate-y-1 
+             group-hover:opacity-90 group-active:scale-95"
             />
           </button>
         </div>
