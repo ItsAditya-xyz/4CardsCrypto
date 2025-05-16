@@ -82,8 +82,8 @@ export async function POST(req) {
     const playersWithCards = updatedPlayers.map((p) => ({
       user_id: p.id,
       hand: [],
+      last_received: null, // ✅ initializing here
     }));
-
     // Give the "0" card to the chosen player
     const nullIndex = fullDeck.indexOf("0");
     playersWithCards[nullHolderIndex].hand.push("0");
