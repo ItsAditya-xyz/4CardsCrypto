@@ -1,0 +1,23 @@
+{
+  "players": [
+    {
+      "hand": ["0", "2", "1", "3", "4"],
+      "user_id": "429c9b2f-a681-44e5-8a2a-549bc63a92ec"
+    },
+    {
+      "hand": ["2", "1", "3", "4"],
+      "user_id": "6df43c8c-6db1-4cb4-9abe-e79d6780eabd"
+    },
+    {
+      "hand": ["1", "4", "3", "2"],
+      "user_id": "4d70d8e2-c731-430a-8860-7b8632721a8f"
+    },
+    {
+      "hand": ["3", "1", "4", "2"],
+      "user_id": "34d7ccab-09aa-4e7e-9320-1e54cbbc204f"
+    }
+  ],
+  "turn_index": 0,
+  "last_passed_card": null,
+  "last_receiver_index": null
+}

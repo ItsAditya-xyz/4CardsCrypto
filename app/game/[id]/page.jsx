@@ -13,7 +13,15 @@ export default function GameRoomPage() {
   const [gameRoom, setGameRoom] = useState(null);
   const [showLogout, setShowLogout] = useState(false);
   const [copied, setCopied] = useState(false);
-
+  const [inGame, setInGame] = useState(false);
+  const getPlayerInfo = (userId) => {
+    return gameRoom?.players.find((p) => p.id === userId);
+  };
+  useEffect(() => {
+    if (gameRoom?.status === "running") {
+      setInGame(true);
+    }
+  }, [gameRoom?.status]);
   useEffect(() => {
     const fetchUserAndGame = async () => {
       const {
@@ -71,6 +79,35 @@ export default function GameRoomPage() {
     fetchUserAndGame();
   }, [id, router]);
 
+  useEffect(() => {
+    let channel = null;
+
+    const subscribeToRoom = () => {
+      channel = supabase
+        .channel(`room-${id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "game_rooms",
+            filter: `id=eq.${id}`,
+          },
+          (payload) => {
+            const updatedRoom = payload.new;
+            setGameRoom(updatedRoom);
+          }
+        )
+        .subscribe();
+    };
+
+    subscribeToRoom();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [id]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
@@ -84,114 +121,188 @@ export default function GameRoomPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-950 text-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
+      <div className='flex items-center justify-center h-screen bg-gray-950 text-white'>
+        <div className='animate-spin rounded-full h-16 w-16 border-b-2 border-white'></div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-950 text-white overflow-hidden">
-      {/* Background image */}
+    <div className='relative min-h-screen bg-gray-950 text-white overflow-hidden'>
       <Image
-        src="/assets/background.png"
-        alt="Background"
+        src='/assets/background.png'
+        alt='Background'
         fill
-        className="absolute inset-0 object-cover opacity-30 z-0"
+        className='absolute inset-0 object-cover opacity-30 z-0'
       />
-
-      {/* Main content wrapper */}
-      <div className="relative z-10 p-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <Image src="/assets/logo.png" alt="Logo" width={160} height={80} />
-          <div className="relative">
+      <div className='relative z-10 p-6'>
+        {!inGame ? (
+          <div>
             <Image
-              src={user?.user_metadata?.avatar_url || "/default-pfp.png"}
-              alt="Profile"
-              width={40}
-              height={40}
-              className="rounded-full cursor-pointer"
-              onClick={() => setShowLogout(!showLogout)}
+              src='/assets/background.png'
+              alt='Background'
+              fill
+              className='absolute inset-0 object-cover opacity-30 z-0'
             />
-            {showLogout && (
-              <button
-                onClick={handleLogout}
-                className="absolute right-0 mt-2 bg-red-600 text-sm text-white px-3 py-1 rounded shadow-lg"
-              >
-                Logout
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* Room Info */}
-        <div className="text-center mt-10">
-          <h1 className="text-4xl font-bold mb-2">Game Room</h1>
-        </div>
-
-        {/* Player Cards */}
-        <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-          {gameRoom.players?.map((player, index) => {
-            const playerColors = ["#da594b", "#539a97", "#f3bf56", "#538da3"];
-            const bgColor = playerColors[index % playerColors.length];
-
-            return (
-              <div
-                key={player.id}
-                className="p-4 rounded-3xl py-10 flex flex-col items-center border"
-                style={{
-                  backgroundColor: bgColor,
-                  borderColor: "#282729",
-                  borderWidth: "6px",
-                }}
-              >
-                <img
-                  src={player.avatar_url || "/default-pfp.png"}
-                  alt="avatar"
-                  className="w-16 h-16 rounded-full mb-2 border border-black/30"
+            {/* Main content wrapper */}
+            <div className='relative z-10 p-6'>
+              {/* Header */}
+              <div className='flex justify-between items-start'>
+                <Image
+                  src='/assets/logo.png'
+                  alt='Logo'
+                  width={160}
+                  height={80}
                 />
-                <p className="font-semibold">{player.user_name || "Unnamed"}</p>
-                {player.full_name && (
-                  <p className="text-sm text-white/80">{player.full_name}</p>
+                <div className='relative'>
+                  <Image
+                    src={user?.user_metadata?.avatar_url || "/default-pfp.png"}
+                    alt='Profile'
+                    width={40}
+                    height={40}
+                    className='rounded-full cursor-pointer'
+                    onClick={() => setShowLogout(!showLogout)}
+                  />
+                  {showLogout && (
+                    <button
+                      onClick={handleLogout}
+                      className='absolute right-0 mt-2 bg-red-600 text-sm text-white px-3 py-1 rounded shadow-lg'>
+                      Logout
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Room Info */}
+              <div className='text-center mt-10'>
+                <h1 className='text-4xl font-bold mb-2'>Game Room</h1>
+              </div>
+
+              {/* Player Cards */}
+              <div className='mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto'>
+                {gameRoom.players?.map((player, index) => {
+                  const playerColors = [
+                    "#da594b",
+                    "#539a97",
+                    "#f3bf56",
+                    "#538da3",
+                  ];
+                  const bgColor = playerColors[index % playerColors.length];
+
+                  return (
+                    <div
+                      key={player.id}
+                      className='p-4 rounded-3xl py-10 flex flex-col items-center border'
+                      style={{
+                        backgroundColor: bgColor,
+                        borderColor: "#282729",
+                        borderWidth: "6px",
+                      }}>
+                      <img
+                        src={player.avatar_url || "/default-pfp.png"}
+                        alt='avatar'
+                        className='w-16 h-16 rounded-full mb-2 border border-black/30'
+                      />
+                      <p className='font-semibold'>
+                        {player.user_name || "Unnamed"}
+                      </p>
+                      {player.full_name && (
+                        <p className='text-sm text-white/80'>
+                          {player.full_name}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Status Message */}
+              <div className='mt-10 text-center text-lg'>
+                <p className='text-white mb-2'>
+                  {gameRoom.players.length} / 4 players joined
+                </p>
+                {gameRoom.players.length < 4 ? (
+                  <p className='text-yellow-400'>
+                    Waiting for more players to join...
+                  </p>
+                ) : (
+                  <p className='text-green-400'>Game is ready to start!</p>
                 )}
               </div>
-            );
-          })}
-        </div>
 
-        {/* Status Message */}
-        <div className="mt-10 text-center text-lg">
-          <p className="text-white mb-2">
-            {gameRoom.players.length} / 4 players joined
-          </p>
-          {gameRoom.players.length < 4 ? (
-            <p className="text-yellow-400">
-              Waiting for more players to join...
-            </p>
-          ) : (
-            <p className="text-green-400">Game is ready to start!</p>
-          )}
-        </div>
-
-        {/* Copy Invite Link */}
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleCopyLink}
-            disabled={copied}
-            className="inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer"
-          >
-            <Image
-              src="/assets/copy room link.png"
-              alt="Copy Link"
-              width={250}
-              height={80}
-              className="transition-all duration-200 ease-in-out 
+              {/* Copy Invite Link */}
+              <div className='mt-8 flex justify-center'>
+                <button
+                  onClick={handleCopyLink}
+                  disabled={copied}
+                  className='inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer'>
+                  <Image
+                    src='/assets/copy room link.png'
+                    alt='Copy Link'
+                    width={250}
+                    height={80}
+                    className='transition-all duration-200 ease-in-out 
              group-hover:scale-105 group-hover:-translate-y-1 
-             group-hover:opacity-90 group-active:scale-95"
-            />
-          </button>
-        </div>
+             group-hover:opacity-90 group-active:scale-95'
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // 🕹️ IN-GAME VIEW
+          <div className='relative w-full h-[80vh] flex items-center justify-center'>
+            {gameRoom.game_state?.players.map((player, index) => {
+              const playerInfo = getPlayerInfo(player.user_id);
+              const pos = index; // 0 = bottom, 1 = left, 2 = top, 3 = right
+              const layoutStyle =
+                pos === 0
+                  ? "absolute bottom-0 left-1/2 -translate-x-1/2"
+                  : pos === 1
+                  ? "absolute left-0 top-1/2 -translate-y-1/2"
+                  : pos === 2
+                  ? "absolute top-0 left-1/2 -translate-x-1/2"
+                  : "absolute right-0 top-1/2 -translate-y-1/2";
+
+              return (
+                <div
+                  key={player.user_id}
+                  className={`${layoutStyle} bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md`}>
+                  <h2 className='text-md font-bold mb-2 text-white text-center'>
+                    {playerInfo?.user_name || "Player"}
+                  </h2>
+                  <div
+                    className={`flex ${
+                      index === 0 ? "flex-row" : "flex-wrap justify-center"
+                    } gap-2`}>
+                    {player.hand.map((card, i) => (
+                      <div
+                        key={i}
+                        className='w-[10vh] h-[15vh] flex items-center justify-center overflow-hidden rounded-lg border-2 border-white/20 bg-black/60'>
+                        <Image
+                          src={`/assets/${
+                            {
+                              1: "dog.webp",
+                              2: "cat.jpg",
+                              3: "bunny.jpg",
+                              4: "panda.jpg",
+                              0: "Null.png",
+                            }[card]
+                          }`}
+                          alt='card'
+                          width={100}
+                          height={160}
+                          className='object-cover w-full h-full'
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
