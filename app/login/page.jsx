@@ -59,7 +59,7 @@ export default function LoginPage() {
       </p>
       <button onClick={handleLogin} className="mt-3">
         <Image
-          src="/assets/loginwithTwitter.png"
+          src="/assets/loginwithTwitter2.png"
           alt="Login with Twitter"
           width={300}
           height={80}
