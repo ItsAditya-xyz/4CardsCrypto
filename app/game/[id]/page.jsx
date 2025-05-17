@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-
 import LobbyView from "./component/LobbyView";
 import GameView from "./component/GameView";
 
@@ -41,6 +40,7 @@ export default function GameRoomPage() {
       console.error("Failed to fetch game room");
       return;
     }
+    
 
     const { gameRoom } = await res.json();
     setGameRoom(gameRoom);
@@ -59,6 +59,21 @@ export default function GameRoomPage() {
       } else {
         console.error("Join room failed");
       }
+    }
+
+    try{
+      // select * from game_rooms where id = id
+      const supabase = (await import("@/lib/supabaseClient")).default;
+      const { data: room, error: roomError } = await supabase
+        .from("game_rooms")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+        console.log("room", room);
+    }
+    catch (error) {
+      console.error("Error fetching game room:", error);
     }
   };
 

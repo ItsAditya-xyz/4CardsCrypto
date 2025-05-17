@@ -11,13 +11,14 @@ export default function LobbyView({
   handleCopyLink,
   handleLogout,
 }) {
+  console.log(user);
   return (
     <>
       <div className="flex justify-between items-start">
         <Image src="/assets/logo.png" alt="Logo" width={160} height={80} />
         <div className="relative">
           <Image
-            src={user?.avatar_url || "/default-pfp.png"}
+            src={user?.user_metadata?.avatar_url || "/default-pfp.png"}
             alt="Profile"
             width={40}
             height={40}
