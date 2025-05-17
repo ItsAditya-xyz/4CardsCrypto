@@ -1,4 +1,3 @@
-// get-game-room (fixed for null-safe game_state)
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
 
@@ -16,20 +15,19 @@ export async function POST(req) {
 
   const { roomId } = await req.json();
 
-  const { data: room, error: roomError } = await supabase
-    .from("game_rooms")
-    .select("*")
-    .eq("id", roomId)
+  const { data: state, error: fetchError } = await supabase
+    .from("player_states")
+    .select("hand, last_received")
+    .eq("game_id", roomId)
+    .eq("user_id", user.id)
     .single();
 
-  if (roomError || !room) {
-    return NextResponse.json({ error: "Game room not found" }, { status: 404 });
+  if (fetchError || !state) {
+    return NextResponse.json(
+      { error: "Could not fetch your hand" },
+      { status: 404 }
+    );
   }
 
-  const safeRoom = {
-    ...room,
-    game_state: room.game_state || {},
-  };
-
-  return NextResponse.json({ gameRoom: safeRoom }, { status: 200 });
+  return NextResponse.json(state, { status: 200 });
 }

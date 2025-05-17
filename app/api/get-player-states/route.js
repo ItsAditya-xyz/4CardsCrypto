@@ -1,4 +1,3 @@
-// app/api/get-all-cards/route.js
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
 
@@ -6,19 +5,19 @@ export async function POST(req) {
   const supabase = await createClient();
   const {
     data: { user },
-    error,
+    error: authError,
   } = await supabase.auth.getUser();
 
-  if (error || !user) {
+  if (authError || !user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const { roomId } = await req.json();
 
-  // Get game room
+  // Get room to check game status
   const { data: room, error: roomError } = await supabase
     .from("game_rooms")
-    .select("*")
+    .select("id, status")
     .eq("id", roomId)
     .single();
 
@@ -26,36 +25,27 @@ export async function POST(req) {
     return NextResponse.json({ error: "Game room not found" }, { status: 404 });
   }
 
-  if (room.status !== "completed") {
-    return NextResponse.json({ error: "Game is not completed" }, { status: 403 });
-  }
-
-  // Get all player hands
-  const { data: playerStates, error: psError } = await supabase
+  const { data: playerStates, error: statesError } = await supabase
     .from("player_states")
     .select("user_id, hand, last_received")
     .eq("game_id", roomId);
 
-  if (psError || !playerStates) {
+  if (statesError) {
     return NextResponse.json({ error: "Failed to fetch player states" }, { status: 500 });
   }
 
-  // Find winner
-  let winner = null;
-  for (const player of playerStates) {
-    const counts = {};
-    for (const card of player.hand) {
-      if (card === "0") continue;
-      counts[card] = (counts[card] || 0) + 1;
+  // Redact hand data unless it's the current user or the game is completed
+  const safeStates = playerStates.map((ps) => {
+    if (ps.user_id === user.id || room.status === "completed") {
+      return ps;
     }
-    if (Object.values(counts).includes(4)) {
-      winner = player.user_id;
-      break;
-    }
-  }
 
-  return NextResponse.json({
-    players: playerStates,
-    winner,
+    return {
+      user_id: ps.user_id,
+      hand: Array(ps.hand.length).fill(null),
+      last_received: null,
+    };
   });
+
+  return NextResponse.json({ playerStates: safeStates }, { status: 200 });
 }

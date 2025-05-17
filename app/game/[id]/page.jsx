@@ -13,6 +13,7 @@ export default function GameRoomPage() {
   const [loading, setLoading] = useState(true);
   const [gameRoom, setGameRoom] = useState(null);
   const [winnerId, setWinnerId] = useState(null);
+  const [playerStates, setPlayerStates] = useState([]);
   const [showLogout, setShowLogout] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inGame, setInGame] = useState(false);
@@ -40,7 +41,6 @@ export default function GameRoomPage() {
       console.error("Failed to fetch game room");
       return;
     }
-    
 
     const { gameRoom } = await res.json();
     setGameRoom(gameRoom);
@@ -61,23 +61,21 @@ export default function GameRoomPage() {
       }
     }
 
-    try{
-      // select * from game_rooms where id = id
-      const supabase = (await import("@/lib/supabaseClient")).default;
-      const { data: room, error: roomError } = await supabase
-        .from("game_rooms")
-        .select("*")
-        .eq("id", id)
-        .single();
+    // Fetch player states
+    if (gameRoom.status === "running" || gameRoom.status === "completed") {
+      const psRes = await fetch("/api/get-player-states", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId: id }),
+      });
 
-        console.log("room", room);
-    }
-    catch (error) {
-      console.error("Error fetching game room:", error);
+      if (psRes.ok) {
+        const { playerStates } = await psRes.json();
+        setPlayerStates(playerStates);
+      }
     }
   };
 
-  // STEP 1: fetch user first
   useEffect(() => {
     const fetchUser = async () => {
       const res = await fetch("/api/user");
@@ -95,7 +93,6 @@ export default function GameRoomPage() {
     fetchUser();
   }, [id, router]);
 
-  // STEP 2: fetch game room only after user is set
   useEffect(() => {
     if (!user) return;
     fetchAndSetGameRoom();
@@ -149,15 +146,7 @@ export default function GameRoomPage() {
       });
 
       const { players, winner } = await res.json();
-
-      setGameRoom((prev) => ({
-        ...prev,
-        game_state: {
-          ...prev.game_state,
-          players,
-        },
-      }));
-
+      setPlayerStates(players);
       setWinnerId(winner);
     };
 
@@ -183,13 +172,11 @@ export default function GameRoomPage() {
     );
   }
 
-  const meIndex = gameRoom.game_state?.players.findIndex(
-    (p) => p.user_id === user.id
-  );
-  const getRelativePlayers = () => {
-    const players = gameRoom.game_state.players;
-    return [...players.slice(meIndex), ...players.slice(0, meIndex)];
-  };
+  const meIndex = playerStates.findIndex((p) => p.user_id === user.id);
+  const getRelativePlayers = () => [
+    ...playerStates.slice(meIndex),
+    ...playerStates.slice(0, meIndex),
+  ];
 
   return (
     <div className="relative min-h-screen bg-gray-950 text-white overflow-hidden">
@@ -199,7 +186,7 @@ export default function GameRoomPage() {
         fill
         className="absolute inset-0 object-cover opacity-70 z-0"
       />
-      <div className="relative z-10 ">
+      <div className="relative z-10">
         {!inGame ? (
           <LobbyView
             gameRoom={gameRoom}
@@ -220,6 +207,7 @@ export default function GameRoomPage() {
             getPlayerInfo={getPlayerInfo}
             id={id}
             winnerId={winnerId}
+            playerStates={playerStates}
           />
         )}
       </div>

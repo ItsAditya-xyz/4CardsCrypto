@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function GameView({
@@ -12,6 +12,7 @@ export default function GameView({
   getPlayerInfo,
   id,
   winnerId,
+  playerStates,
 }) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -22,15 +23,65 @@ export default function GameView({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isMyTurn =
+    gameRoom.game_state?.turn_index === meIndex &&
+    gameRoom.status === "running";
+
+  const renderCard = (card, index, isCurrentTurn, isClickable) => {
+    const handleCardClick = async () => {
+      if (!isClickable || card === null) return;
+
+      const res = await fetch("/api/pass-card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId: id, card }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) alert(data.error || "Failed to pass card.");
+    };
+
+    return (
+      <div
+        key={index}
+        onClick={handleCardClick}
+        className={`rounded-md overflow-hidden border-2 bg-black/60 transition-all duration-200 w-[80px] h-[110px] md:w-[100px] md:h-[140px] ${
+          isClickable
+            ? "hover:scale-105 cursor-pointer border-yellow-400"
+            : "opacity-50 border-white/20"
+        }`}
+      >
+        {card !== null ? (
+          <Image
+            src={`/assets/${cardAssets[String(card)]}`}
+            alt="card"
+            width={100}
+            height={140}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className={`w-full h-full bg-gray-800 relative overflow-hidden rounded-md ${
+              isCurrentTurn ? "shimmer" : ""
+            }`}
+          />
+        )}
+      </div>
+    );
+  };
+
   if (isMobile) {
     return (
       <div className="w-full min-h-[100vh] grid grid-cols-2 justify-items-center">
         {getRelativePlayers().map((player, pos) => {
-          const playerInfo = getPlayerInfo(player.user_id);
-          const isCurrentTurn =
-            gameRoom.game_state.turn_index === (meIndex + pos) % 4;
+          const globalIndex = (meIndex + pos) % 4;
+          const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
           const isMe = player.user_id === user.id;
-  
+          const playerInfo = getPlayerInfo(player.user_id);
+          const cards = gameRoom.status === "completed" || isMe
+            ? player.hand
+            : Array(player.hand.length).fill(null);
+
           return (
             <div
               key={player.user_id}
@@ -53,62 +104,10 @@ export default function GameView({
                   </p>
                 )}
               </div>
-  
               <div className="grid grid-cols-2 gap-2">
-                {(gameRoom.status === "completed" || isMe
-                  ? player.hand
-                  : Array(player.hand.length).fill(null)
-                ).map((card, cardIdx) => {
-                  const isMyTurn =
-                    isMe &&
-                    gameRoom.game_state.turn_index === meIndex &&
-                    gameRoom.status === "running";
-  
-                  const handleCardClick = async () => {
-                    if (!isMyTurn || card === null) return;
-  
-                    const res = await fetch("/api/pass-card", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ roomId: id, card }),
-                    });
-  
-                    const data = await res.json();
-                    if (!res.ok) {
-                      alert(data.error || "Failed to pass card.");
-                    }
-                  };
-  
-                  return (
-                    <div
-                      key={cardIdx}
-                      onClick={handleCardClick}
-                      className={`rounded-md overflow-hidden border-2 bg-black/60 transition-all duration-200 w-[80px] h-[110px] md:w-[100px] md:h-[140px] ${
-                        isMyTurn
-                          ? "hover:scale-105 cursor-pointer border-yellow-400"
-                          : "opacity-50 border-white/20"
-                      }`}
-                    >
-                      {card !== null ? (
-                        <Image
-                          src={`/assets/${cardAssets[String(card)]}`}
-                          alt="card"
-                          width={100}
-                          height={140}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className={`w-full h-full bg-gray-800 relative overflow-hidden rounded-md ${
-                            isCurrentTurn ? "shimmer" : ""
-                          }`}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+                {cards.map((card, i) =>
+                  renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
+                )}
               </div>
             </div>
           );
@@ -116,16 +115,17 @@ export default function GameView({
       </div>
     );
   }
-  
 
-  // 👇 Desktop layout continues as-is
   return (
     <div className="relative w-full h-[90vh] flex items-center justify-center mt-10">
       {getRelativePlayers().map((player, pos) => {
-        const playerInfo = getPlayerInfo(player.user_id);
         const globalIndex = (meIndex + pos) % 4;
-        const isCurrentTurn = gameRoom.game_state.turn_index === globalIndex;
+        const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
         const isMe = player.user_id === user.id;
+        const playerInfo = getPlayerInfo(player.user_id);
+        const cards = gameRoom.status === "completed" || isMe
+          ? player.hand
+          : Array(player.hand.length).fill(null);
 
         const layoutStyle =
           pos === 0
@@ -139,21 +139,21 @@ export default function GameView({
         return (
           <div key={player.user_id} className={`${layoutStyle}`}>
             <div
-              className={` rounded-2xl transition-all duration-300 ${
+              className={`rounded-2xl transition-all duration-300 ${
                 isCurrentTurn ? "ring-animation" : ""
               }`}
             >
               <div className="bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md">
                 {gameRoom?.game_state?.last_passed_card &&
                   player.user_id ===
-                    gameRoom?.game_state?.players?.[
-                      gameRoom.game_state.last_receiver_index
-                    ]?.user_id && (
+                    playerStates[gameRoom.game_state?.last_receiver_index]
+                      ?.user_id && (
                     <div className="mb-2 text-yellow-300 text-sm text-center animate-ping-slow">
                       Received:{" "}
                       {
-                        cardAssets[gameRoom.game_state.last_passed_card]
-                          ?.split(".")[0]
+                        cardAssets[
+                          gameRoom.game_state.last_passed_card
+                        ]?.split(".")[0]
                       }
                     </div>
                   )}
@@ -161,61 +161,15 @@ export default function GameView({
                 <h2 className="text-md font-bold mb-2 text-white text-center">
                   {playerInfo?.user_name || "Player"}
                 </h2>
+
                 <div
                   className={`flex ${
                     pos === 0 ? "flex-row" : "flex-wrap justify-center"
                   } gap-2`}
                 >
-                  {gameRoom.status === "completed" || isMe
-                    ? player.hand.map((card, i) => {
-                        const isMyTurn =
-                          isMe &&
-                          gameRoom.game_state.turn_index === meIndex &&
-                          gameRoom.status === "running";
-
-                        const handleCardClick = async () => {
-                          if (!isMyTurn) return;
-
-                          const res = await fetch("/api/pass-card", {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ roomId: id, card }),
-                          });
-
-                          const data = await res.json();
-                          if (!res.ok) {
-                            alert(data.error || "Failed to pass card.");
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={i}
-                            onClick={handleCardClick}
-                            className={`w-[10vh] h-[15vh] flex items-center justify-center overflow-hidden rounded-lg border border-white/20 transition-all duration-150 ${
-                              isMyTurn
-                                ? "cursor-pointer hover:scale-105 bg-black/60"
-                                : "bg-black/60 opacity-70"
-                            }`}
-                          >
-                            <Image
-                              src={`/assets/${cardAssets[String(card)]}`}
-                              alt="card"
-                              width={100}
-                              height={160}
-                              className="object-cover w-full h-full"
-                            />
-                          </div>
-                        );
-                      })
-                    : player.hand.map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-[10vh] h-[15vh] rounded-lg bg-gray-800 border border-white/20 opacity-30"
-                        />
-                      ))}
+                  {cards.map((card, i) =>
+                    renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
+                  )}
                 </div>
               </div>
             </div>
