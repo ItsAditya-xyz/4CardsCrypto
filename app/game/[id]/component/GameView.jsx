@@ -136,7 +136,13 @@ export default function GameView({
               </div>
               <div className='grid grid-cols-2 gap-2'>
                 {cards.map((card, i) =>
-                  renderCard(card, i, isCurrentTurn, isMe && isMyTurn, winnerId === player.user_id)
+                  renderCard(
+                    card,
+                    i,
+                    isCurrentTurn,
+                    isMe && isMyTurn,
+                    winnerId === player.user_id
+                  )
                 )}
               </div>
             </div>
@@ -207,10 +213,18 @@ export default function GameView({
                       ?.id && (
                     <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'></div>
                   )}
-
-                <h2 className='text-md font-bold text-white text-center'>
-                  {playerInfo?.user_name || "Player"}
-                </h2>
+                <div className='flex flex-row justify-center items-center space-x-1 mb-2'>
+                <Image
+                  src={playerInfo?.avatar_url || "/default-pfp.png"}
+                  alt='avatar'
+                  width={40}
+                  height={40}
+                  className='rounded-full border border-white/30'
+                />
+                <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
+                  @{playerInfo?.user_name || "player"}
+                </p>
+                </div>
                 {winnerId === player.user_id && (
                   <p className='text-xs text-yellow-400 font-bold animate-bounce text-center mt-1'>
                     🏆 Winner!
