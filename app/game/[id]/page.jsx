@@ -173,10 +173,14 @@ export default function GameRoomPage() {
   }
 
 const meIndex = gameRoom.players.findIndex((p) => p.id === user.id);
-  const getRelativePlayers = () => [
-    ...playerStates.slice(meIndex),
-    ...playerStates.slice(0, meIndex),
-  ];
+const getRelativePlayers = () => {
+  const merged = gameRoom.players.map((p) => {
+    const matchingState = playerStates.find((s) => s.user_id === p.id);
+    return matchingState || { user_id: p.id, hand: [], last_received: null };
+  });
+
+  return [...merged.slice(meIndex), ...merged.slice(0, meIndex)];
+};
 
   return (
     <div className="relative min-h-screen bg-gray-950 text-white overflow-hidden">
