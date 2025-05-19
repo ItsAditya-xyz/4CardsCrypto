@@ -49,15 +49,14 @@ export default function GameView({
           isClickable
             ? "hover:scale-105 cursor-pointer border-yellow-400"
             : "opacity-50 border-white/20"
-        }`}
-      >
+        }`}>
         {card !== null ? (
           <Image
             src={`/assets/${cardAssets[String(card)]}`}
-            alt="card"
+            alt='card'
             width={100}
             height={140}
-            className="w-full h-full object-cover"
+            className='w-full h-full object-cover'
           />
         ) : (
           <div
@@ -72,39 +71,39 @@ export default function GameView({
 
   if (isMobile) {
     return (
-      <div className="w-full min-h-[100vh] grid grid-cols-2 justify-items-center">
+      <div className='w-full min-h-[100vh] grid grid-cols-2 justify-items-center'>
         {getRelativePlayers().map((player, pos) => {
           const globalIndex = (meIndex + pos) % 4;
           const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
           const isMe = player.user_id === user.id;
           const playerInfo = getPlayerInfo(player.user_id);
-          const cards = gameRoom.status === "completed" || isMe
-            ? player.hand
-            : Array(player.hand.length).fill(null);
+          const cards =
+            gameRoom.status === "completed" || isMe
+              ? player.hand
+              : Array(player.hand.length).fill(null);
 
           return (
             <div
               key={player.user_id}
-              className="w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300"
-            >
-              <div className="flex flex-col items-center mb-2">
+              className='w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'>
+              <div className='flex flex-col items-center mb-2'>
                 <Image
                   src={playerInfo?.avatar_url || "/default-pfp.png"}
-                  alt="avatar"
+                  alt='avatar'
                   width={40}
                   height={40}
-                  className="rounded-full border border-white/30"
+                  className='rounded-full border border-white/30'
                 />
-                <p className="text-sm text-white mt-1 truncate text-center max-w-[100px]">
+                <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
                   @{playerInfo?.user_name || "player"}
                 </p>
                 {winnerId === player.user_id && (
-                  <p className="text-xs text-yellow-400 font-bold animate-bounce mt-1">
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce mt-1'>
                     🏆 Winner!
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className='grid grid-cols-2 gap-2'>
                 {cards.map((card, i) =>
                   renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
                 )}
@@ -117,15 +116,18 @@ export default function GameView({
   }
 
   return (
-    <div className="relative w-full h-[90vh] flex items-center justify-center mt-10">
+    <div className='relative w-full h-[90vh] flex items-center justify-center mt-10'>
       {getRelativePlayers().map((player, pos) => {
         const globalIndex = (meIndex + pos) % 4;
         const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
         const isMe = player.user_id === user.id;
         const playerInfo = getPlayerInfo(player.user_id);
-        const cards = gameRoom.status === "completed" || isMe
-          ? player.hand
-          : Array(player.hand.length).fill(null);
+        const actualHand =
+          playerStates.find((p) => p.user_id === player.user_id)?.hand || [];
+        const cards =
+          gameRoom.status === "completed" || isMe
+            ? actualHand
+            : Array(actualHand.length).fill(null);
 
         const layoutStyle =
           pos === 0
@@ -141,32 +143,30 @@ export default function GameView({
             <div
               className={`rounded-2xl transition-all duration-300 ${
                 isCurrentTurn ? "ring-animation" : ""
-              }`}
-            >
-              <div className="bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md">
+              }`}>
+              <div className='bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md'>
                 {gameRoom?.game_state?.last_passed_card &&
                   player.user_id ===
                     playerStates[gameRoom.game_state?.last_receiver_index]
                       ?.user_id && (
-                    <div className="mb-2 text-yellow-300 text-sm text-center animate-ping-slow">
+                    <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'>
                       Received:{" "}
                       {
-                        cardAssets[
-                          gameRoom.game_state.last_passed_card
-                        ]?.split(".")[0]
+                        cardAssets[gameRoom.game_state.last_passed_card]?.split(
+                          "."
+                        )[0]
                       }
                     </div>
                   )}
 
-                <h2 className="text-md font-bold mb-2 text-white text-center">
+                <h2 className='text-md font-bold mb-2 text-white text-center'>
                   {playerInfo?.user_name || "Player"}
                 </h2>
 
                 <div
                   className={`flex ${
                     pos === 0 ? "flex-row" : "flex-wrap justify-center"
-                  } gap-2`}
-                >
+                  } gap-2`}>
                   {cards.map((card, i) =>
                     renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
                   )}

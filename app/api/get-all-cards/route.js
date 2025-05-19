@@ -1,6 +1,7 @@
 // app/api/get-all-cards/route.js
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
+import supabaseAdmin from "@/lib/supabaseAdmin";
 
 export async function POST(req) {
   const supabase = await createClient();
@@ -31,7 +32,7 @@ export async function POST(req) {
   }
 
   // Get all player hands
-  const { data: playerStates, error: psError } = await supabase
+  const { data: playerStates, error: psError } = await supabaseAdmin
     .from("player_states")
     .select("user_id, hand, last_received")
     .eq("game_id", roomId);
