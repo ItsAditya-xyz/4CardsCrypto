@@ -84,7 +84,7 @@ export default function LobbyView({
             alt="Copy Link"
             width={250}
             height={80}
-            className="transition-all group-hover:scale-105 group-hover:-translate-y-1"
+            className="transition-all group-hover:scale-105 group-hover:-translate-y-1 hover:cursor-pointer"
           />
         </button>
       </div>

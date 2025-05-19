@@ -23,9 +23,9 @@ export default function GameView({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isMyTurn =
-    gameRoom.game_state?.turn_index === meIndex &&
-    gameRoom.status === "running";
+const isMyTurn =
+  gameRoom.game_state?.turn_index === meIndex &&
+  gameRoom.status === "running";
 
   const renderCard = (card, index, isCurrentTurn, isClickable) => {
     const handleCardClick = async () => {
@@ -73,7 +73,9 @@ export default function GameView({
     return (
       <div className='w-full min-h-[100vh] grid grid-cols-2 justify-items-center'>
         {getRelativePlayers().map((player, pos) => {
-          const globalIndex = (meIndex + pos) % 4;
+          const globalIndex = gameRoom.players.findIndex(
+            (p) => p.id === player.user_id
+          );
           const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
           const isMe = player.user_id === user.id;
           const playerInfo = getPlayerInfo(player.user_id);
@@ -118,7 +120,9 @@ export default function GameView({
   return (
     <div className='relative w-full h-[90vh] flex items-center justify-center mt-10'>
       {getRelativePlayers().map((player, pos) => {
-        const globalIndex = (meIndex + pos) % 4;
+        const globalIndex = gameRoom.players.findIndex(
+          (p) => p.id === player.user_id
+        );
         const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
         const isMe = player.user_id === user.id;
         const playerInfo = getPlayerInfo(player.user_id);

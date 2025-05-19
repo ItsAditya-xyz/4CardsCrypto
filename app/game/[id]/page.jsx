@@ -172,7 +172,7 @@ export default function GameRoomPage() {
     );
   }
 
-  const meIndex = playerStates.findIndex((p) => p.user_id === user.id);
+const meIndex = gameRoom.players.findIndex((p) => p.id === user.id);
   const getRelativePlayers = () => [
     ...playerStates.slice(meIndex),
     ...playerStates.slice(0, meIndex),

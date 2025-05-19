@@ -48,3 +48,8 @@ Restart
 After the win screen, players can click "Restart Game" to shuffle and begin a new round
 
 Let me know if you'd like to show these in-game via a rules button or modal!
+
+
+Bugs in current game:
+
+- when card is distributed, not all players are seeing the same player as first mover
