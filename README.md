@@ -52,4 +52,5 @@ Let me know if you'd like to show these in-game via a rules button or modal!
 
 Bugs in current game:
 
-- when card is distributed, not all players are seeing the same player as first mover
+- POV for the player is messed up. it changes when game moves.
+- card distribution is fucked up. One player received 3 cards

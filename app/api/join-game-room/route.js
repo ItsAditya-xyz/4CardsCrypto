@@ -1,7 +1,8 @@
-// join-game-room (refactored from working original to support player_states schema)
+// app/api/join-game-room/route.js
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabaseServer";
 import supabaseAdmin from "@/lib/supabaseAdmin";
+import { distributeCards } from "@/lib/distributeCards";
 
 export async function POST(req) {
   const supabase = await createServerClient();
@@ -45,63 +46,19 @@ export async function POST(req) {
   const updatedPlayers = [...room.players, newPlayer];
   const updatePayload = { players: updatedPlayers };
 
-  const isStartingGame = updatedPlayers.length === 4;
-  if (isStartingGame) {
-    const fullDeck = [
-      "1", "1", "1", "1",
-      "2", "2", "2", "2",
-      "3", "3", "3", "3",
-      "4", "4", "4", "4",
-      "0",
-    ];
-
-    for (let i = fullDeck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
-    }
-
-    const nullHolderIndex = Math.floor(Math.random() * 4);
-    const playerStates = updatedPlayers.map((p) => ({
-      user_id: p.id,
-      hand: [],
-      last_received: null,
-    }));
-
-    const nullIndex = fullDeck.indexOf("0");
-    playerStates[nullHolderIndex].hand.push("0");
-    fullDeck.splice(nullIndex, 1);
-
-    const maxPerType = 2;
-    const handLimits = Array(4).fill(0).map(() => ({}));
-    let round = 0;
-    let retries = 0;
-
-    while (fullDeck.length > 0 && retries < 1000) {
-      const i = round % 4;
-      const player = playerStates[i];
-      const limit = handLimits[i];
-      const maxCards = i === nullHolderIndex ? 5 : 4;
-
-      const card = fullDeck[0];
-      const count = limit[card] || 0;
-
-      if (player.hand.length < maxCards && count < maxPerType) {
-        player.hand.push(card);
-        limit[card] = count + 1;
-        fullDeck.shift();
-      }
-
-      round++;
-      retries++;
-    }
+  // Only start game if this is the 4th player AND game not already initialized
+  if (updatedPlayers.length === 4 && !room.game_initialized) {
+    const { playerStates, turnIndex } = distributeCards(updatedPlayers);
 
     updatePayload.game_state = {
-      turn_index: nullHolderIndex,
+      turn_index: turnIndex,
       last_passed_card: null,
       last_receiver_index: null,
     };
     updatePayload.status = "running";
+    updatePayload.game_initialized = true;
 
+    // Insert player_states
     for (const p of playerStates) {
       const { data: exists } = await supabaseAdmin
         .from("player_states")
@@ -111,12 +68,14 @@ export async function POST(req) {
         .single();
 
       if (!exists) {
-        const { error: insertError } = await supabaseAdmin.from("player_states").insert({
-          game_id: roomId,
-          user_id: p.user_id,
-          hand: p.hand,
-          last_received: p.last_received,
-        });
+        const { error: insertError } = await supabaseAdmin
+          .from("player_states")
+          .insert({
+            game_id: roomId,
+            user_id: p.user_id,
+            hand: p.hand,
+            last_received: p.last_received,
+          });
 
         if (insertError) {
           console.error("Failed to insert player_state for", p.user_id, insertError);
@@ -125,10 +84,12 @@ export async function POST(req) {
     }
   }
 
+  // Final DB update (only if game hasn't been initialized already)
   const { error: updateError } = await supabaseAdmin
     .from("game_rooms")
     .update(updatePayload)
-    .eq("id", roomId);
+    .eq("id", roomId)
+    .eq("game_initialized", false); // ✅ ensures only one init happens
 
   if (updateError) {
     console.error("Join or game init failed:", updateError);

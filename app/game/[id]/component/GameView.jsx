@@ -23,9 +23,9 @@ export default function GameView({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-const isMyTurn =
-  gameRoom.game_state?.turn_index === meIndex &&
-  gameRoom.status === "running";
+  const isMyTurn =
+    gameRoom.game_state?.turn_index === meIndex &&
+    gameRoom.status === "running";
 
   const renderCard = (card, index, isCurrentTurn, isClickable) => {
     const handleCardClick = async () => {
@@ -126,12 +126,12 @@ const isMyTurn =
         const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
         const isMe = player.user_id === user.id;
         const playerInfo = getPlayerInfo(player.user_id);
-        const actualHand =
-          playerStates.find((p) => p.user_id === player.user_id)?.hand || [];
+        // const actualHand =
+        //   playerStates.find((p) => p.user_id === player.user_id)?.hand || [];
         const cards =
           gameRoom.status === "completed" || isMe
-            ? actualHand
-            : Array(actualHand.length).fill(null);
+            ? player.hand
+            : Array(player.hand.length).fill(null);
 
         const layoutStyle =
           pos === 0
@@ -151,8 +151,8 @@ const isMyTurn =
               <div className='bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md'>
                 {gameRoom?.game_state?.last_passed_card &&
                   player.user_id ===
-                    playerStates[gameRoom.game_state?.last_receiver_index]
-                      ?.user_id && (
+                    gameRoom.players[gameRoom.game_state?.last_receiver_index]
+                      ?.id && (
                     <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'>
                       Received:{" "}
                       {
