@@ -27,7 +27,13 @@ export default function GameView({
     gameRoom.game_state?.turn_index === meIndex &&
     gameRoom.status === "running";
 
-  const renderCard = (card, index, isCurrentTurn, isClickable) => {
+  const renderCard = (
+    card,
+    index,
+    isCurrentTurn,
+    isClickable,
+    isWinner = false
+  ) => {
     const handleCardClick = async () => {
       if (!isClickable || card === null) return;
 
@@ -48,8 +54,10 @@ export default function GameView({
         className={`rounded-md overflow-hidden border-2 bg-black/60 transition-all duration-200 w-[80px] h-[110px] md:w-[100px] md:h-[140px] ${
           isClickable
             ? "hover:scale-105 cursor-pointer border-yellow-400"
-            : "opacity-50 border-white/20"
-        }`}>
+            : !isWinner
+            ? "opacity-50 border-white/20"
+            : null
+        } ${isWinner ? "scale-105 border-yellow-400" : ""}`}>
         {card !== null ? (
           <Image
             src={`/assets/${cardAssets[String(card)]}`}
@@ -128,7 +136,7 @@ export default function GameView({
               </div>
               <div className='grid grid-cols-2 gap-2'>
                 {cards.map((card, i) =>
-                  renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
+                  renderCard(card, i, isCurrentTurn, isMe && isMyTurn, winnerId === player.user_id)
                 )}
               </div>
             </div>
@@ -187,31 +195,40 @@ export default function GameView({
               className={`rounded-2xl transition-all duration-300 ${
                 isCurrentTurn ? "ring-animation" : ""
               }`}>
-              <div className='bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md'>
+              <div
+                className={`bg-[#0b1e2e]/80 p-4 rounded-xl shadow-md transition-all duration-300 ${
+                  winnerId === player.user_id
+                    ? "ring-2 ring-yellow-400 shadow-yellow-300"
+                    : ""
+                }`}>
                 {gameRoom?.game_state?.last_passed_card &&
                   player.user_id ===
                     gameRoom.players[gameRoom.game_state?.last_receiver_index]
                       ?.id && (
-                    <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'>
-                      Received:{" "}
-                      {
-                        cardAssets[gameRoom.game_state.last_passed_card]?.split(
-                          "."
-                        )[0]
-                      }
-                    </div>
+                    <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'></div>
                   )}
 
-                <h2 className='text-md font-bold mb-2 text-white text-center'>
+                <h2 className='text-md font-bold text-white text-center'>
                   {playerInfo?.user_name || "Player"}
                 </h2>
+                {winnerId === player.user_id && (
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce text-center mt-1'>
+                    🏆 Winner!
+                  </p>
+                )}
 
                 <div
                   className={`flex ${
                     pos === 0 ? "flex-row" : "flex-wrap justify-center"
                   } gap-2`}>
                   {cards.map((card, i) =>
-                    renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
+                    renderCard(
+                      card,
+                      i,
+                      isCurrentTurn,
+                      isMe && isMyTurn,
+                      winnerId === player.user_id // new param: isWinner
+                    )
                   )}
                 </div>
               </div>
