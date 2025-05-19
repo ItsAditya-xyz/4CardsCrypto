@@ -69,56 +69,74 @@ export default function GameView({
     );
   };
 
-if (isMobile) {
-  const all = getRelativePlayers();
-const clockwiseOrder = [all[2], all[3], all[1], all[0]];
+  if (isMobile) {
+    const all = getRelativePlayers();
+    const clockwiseOrder = [all[2], all[3], all[1], all[0]];
 
-  return (
-    <div className='w-full min-h-[100vh] grid grid-cols-2 justify-items-center'>
-      {clockwiseOrder.map((player, pos) => {
-        const globalIndex = gameRoom.players.findIndex(
-          (p) => p.id === player.user_id
-        );
-        const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
-        const isMe = player.user_id === user.id;
-        const playerInfo = getPlayerInfo(player.user_id);
-        const cards =
-          gameRoom.status === "completed" || isMe
-            ? player.hand
-            : Array(player.hand.length).fill(null);
+    return (
+      <div className='w-full min-h-[100vh] grid grid-cols-2 justify-items-center'>
+        {clockwiseOrder.map((player, pos) => {
+          const globalIndex = gameRoom.players.findIndex(
+            (p) => p.id === player.user_id
+          );
+          const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
+          const isMe = player.user_id === user.id;
+          const playerInfo = getPlayerInfo(player.user_id);
+          let cards;
 
-        return (
-          <div
-            key={player.user_id}
-            className='w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'>
-            <div className='flex flex-col items-center mb-2'>
-              <Image
-                src={playerInfo?.avatar_url || "/default-pfp.png"}
-                alt='avatar'
-                width={40}
-                height={40}
-                className='rounded-full border border-white/30'
-              />
-              <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
-                @{playerInfo?.user_name || "player"}
-              </p>
-              {winnerId === player.user_id && (
-                <p className='text-xs text-yellow-400 font-bold animate-bounce mt-1'>
-                  🏆 Winner!
+          const isLastReceiver =
+            gameRoom.players[gameRoom.game_state?.last_receiver_index]?.id ===
+            player.user_id;
+
+          if (gameRoom.status === "completed" || isMe) {
+            cards = player.hand;
+          } else if (isLastReceiver) {
+            // Show one revealed card for the last receiver
+            let injected = false;
+            cards = player.hand.map(() => {
+              if (!injected) {
+                injected = true;
+                return gameRoom.game_state?.last_passed_card;
+              }
+              return null;
+            });
+          } else {
+            // Hide everything for others
+            cards = player.hand.map(() => null);
+          }
+
+          return (
+            <div
+              key={player.user_id}
+              className='w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'>
+              <div className='flex flex-col items-center mb-2'>
+                <Image
+                  src={playerInfo?.avatar_url || "/default-pfp.png"}
+                  alt='avatar'
+                  width={40}
+                  height={40}
+                  className='rounded-full border border-white/30'
+                />
+                <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
+                  @{playerInfo?.user_name || "player"}
                 </p>
-              )}
+                {winnerId === player.user_id && (
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce mt-1'>
+                    🏆 Winner!
+                  </p>
+                )}
+              </div>
+              <div className='grid grid-cols-2 gap-2'>
+                {cards.map((card, i) =>
+                  renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
+                )}
+              </div>
             </div>
-            <div className='grid grid-cols-2 gap-2'>
-              {cards.map((card, i) =>
-                renderCard(card, i, isCurrentTurn, isMe && isMyTurn)
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className='relative w-full h-[90vh] flex items-center justify-center mt-10'>
@@ -131,10 +149,28 @@ const clockwiseOrder = [all[2], all[3], all[1], all[0]];
         const playerInfo = getPlayerInfo(player.user_id);
         // const actualHand =
         //   playerStates.find((p) => p.user_id === player.user_id)?.hand || [];
-        const cards =
-          gameRoom.status === "completed" || isMe
-            ? player.hand
-            : Array(player.hand.length).fill(null);
+        let cards;
+
+        const isLastReceiver =
+          gameRoom.players[gameRoom.game_state?.last_receiver_index]?.id ===
+          player.user_id;
+
+        if (gameRoom.status === "completed" || isMe) {
+          cards = player.hand;
+        } else if (isLastReceiver) {
+          // Show one revealed card for the last receiver
+          let injected = false;
+          cards = player.hand.map(() => {
+            if (!injected) {
+              injected = true;
+              return gameRoom.game_state?.last_passed_card;
+            }
+            return null;
+          });
+        } else {
+          // Hide everything for others
+          cards = player.hand.map(() => null);
+        }
 
         const layoutStyle =
           pos === 0
