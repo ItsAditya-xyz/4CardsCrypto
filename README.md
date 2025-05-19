@@ -52,5 +52,3 @@ Let me know if you'd like to show these in-game via a rules button or modal!
 
 Bugs in current game:
 
-- POV for the player is messed up. it changes when game moves.
-- card distribution is fucked up. One player received 3 cards
