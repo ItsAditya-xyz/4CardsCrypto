@@ -170,116 +170,116 @@ export default function GameView({
     );
   };
 
- if (isMobile) {
-  const all = getRelativePlayers();
-  const clockwiseOrder = [all[2], all[3], all[1], all[0]];
+  if (isMobile) {
+    const all = getRelativePlayers();
+    const clockwiseOrder = [all[2], all[3], all[1], all[0]];
 
-  return (
-    <div className="bg-[#0b1e2e]/80">
-      <Header />
-      <div className='w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center pt-12'>
-        {toastMsg && <Toast message={toastMsg} />}
+    return (
+      <div className='bg-[#0b1e2e]/80'>
+        <Header showHamburger={true} />
+        <div className='w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center pt-12 '>
+          {toastMsg && <Toast message={toastMsg} />}
 
-        {clockwiseOrder.map((player, pos) => {
-          const globalIndex = gameRoom.players.findIndex(
-            (p) => p.id === player.user_id
-          );
-          const isCurrentTurn =
-            (optimisticTurnIndex ?? gameRoom.game_state?.turn_index) ===
-            globalIndex;
-          const isMe = player.user_id === user.id;
-          const playerInfo = getPlayerInfo(player.user_id);
+          {clockwiseOrder.map((player, pos) => {
+            const globalIndex = gameRoom.players.findIndex(
+              (p) => p.id === player.user_id
+            );
+            const isCurrentTurn =
+              (optimisticTurnIndex ?? gameRoom.game_state?.turn_index) ===
+              globalIndex;
+            const isMe = player.user_id === user.id;
+            const playerInfo = getPlayerInfo(player.user_id);
 
-          const isLastReceiver =
-            gameRoom.players[gameRoom.game_state?.last_receiver_index]?.id ===
-            player.user_id;
+            const isLastReceiver =
+              gameRoom.players[gameRoom.game_state?.last_receiver_index]?.id ===
+              player.user_id;
 
-          let cards;
-          if (gameRoom.status === "completed" || isMe) {
-            cards =
-              isMe && optimisticHand.length > 0 ? optimisticHand : player.hand;
-          } else if (isLastReceiver) {
-            // Show one revealed card for the last receiver
-            let injected = false;
-            cards = player.hand.map(() => {
-              if (!injected) {
-                injected = true;
-                return gameRoom.game_state?.last_passed_card;
-              }
-              return null;
-            });
-          } else {
-            cards = player.hand.map(() => null); // Hidden
-          }
+            let cards;
+            if (gameRoom.status === "completed" || isMe) {
+              cards =
+                isMe && optimisticHand.length > 0
+                  ? optimisticHand
+                  : player.hand;
+            } else if (isLastReceiver) {
+              // Show one revealed card for the last receiver
+              let injected = false;
+              cards = player.hand.map(() => {
+                if (!injected) {
+                  injected = true;
+                  return gameRoom.game_state?.last_passed_card;
+                }
+                return null;
+              });
+            } else {
+              cards = player.hand.map(() => null); // Hidden
+            }
 
-          const isTopRow = pos < 2;
+            const isTopRow = pos < 2;
 
-          return (
-            <div
-              key={player.user_id}
-              className='w-full  p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'
-            >
-              {!isTopRow && (
-                <div className='flex flex-row space-x-1 items-center mb-2'>
-                  <Image
-                    src={playerInfo?.avatar_url || "/default-pfp.png"}
-                    alt='avatar'
-                    width={40}
-                    height={40}
-                    className='rounded-full border border-white/30'
-                  />
-                  <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
-                    @{playerInfo?.user_name || "player"}
-                  </p>
+            return (
+              <div
+                key={player.user_id}
+                className='w-full  p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'>
+                {!isTopRow && (
+                  <div className='flex flex-row space-x-1 items-center mb-2'>
+                    <Image
+                      src={playerInfo?.avatar_url || "/default-pfp.png"}
+                      alt='avatar'
+                      width={40}
+                      height={40}
+                      className='rounded-full border border-white/30'
+                    />
+                    <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
+                      @{playerInfo?.user_name || "player"}
+                    </p>
+                  </div>
+                )}
+
+                <div className='grid grid-cols-2 gap-2'>
+                  {cards.map((card, i) =>
+                    renderCard(
+                      card,
+                      i,
+                      isCurrentTurn,
+                      isMe && isMyTurn,
+                      winnerId === player.user_id
+                    )
+                  )}
                 </div>
-              )}
 
-              <div className='grid grid-cols-2 gap-2'>
-                {cards.map((card, i) =>
-                  renderCard(
-                    card,
-                    i,
-                    isCurrentTurn,
-                    isMe && isMyTurn,
-                    winnerId === player.user_id
-                  )
+                {isTopRow && (
+                  <div className='flex flex-row space-x-1 items-center mt-2'>
+                    <Image
+                      src={playerInfo?.avatar_url || "/default-pfp.png"}
+                      alt='avatar'
+                      width={40}
+                      height={40}
+                      className='rounded-full border border-white/30'
+                    />
+                    <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
+                      @{playerInfo?.user_name || "player"}
+                    </p>
+                  </div>
+                )}
+
+                {winnerId === player.user_id && (
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce my-1'>
+                    🏆 Winner!
+                  </p>
                 )}
               </div>
-
-              {isTopRow && (
-                <div className='flex flex-row space-x-1 items-center mt-2'>
-                  <Image
-                    src={playerInfo?.avatar_url || "/default-pfp.png"}
-                    alt='avatar'
-                    width={40}
-                    height={40}
-                    className='rounded-full border border-white/30'
-                  />
-                  <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
-                    @{playerInfo?.user_name || "player"}
-                  </p>
-                </div>
-              )}
-
-              {winnerId === player.user_id && (
-                <p className='text-xs text-yellow-400 font-bold animate-bounce my-1'>
-                  🏆 Winner!
-                </p>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
-}
-
+    );
+  }
 
   return (
-    <div className='relative w-full  flex items-center justify-center '>
+    <div className='relative w-full  flex items-center justify-center  '>
       <Header />
       {toastMsg && <Toast message={toastMsg} />}
-      <div className='my-10 h-[90vh]'>
+      <div className='my-10 h-[90vh] '>
         {getRelativePlayers().map((player, pos) => {
           const globalIndex = gameRoom.players.findIndex(
             (p) => p.id === player.user_id
