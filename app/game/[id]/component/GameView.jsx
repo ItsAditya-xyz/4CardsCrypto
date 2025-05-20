@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRef } from "react";
+import Toast from "@/components/toast";
 
 export default function GameView({
   gameRoom,
@@ -19,6 +20,12 @@ export default function GameView({
   const [optimisticTurnIndex, setOptimisticTurnIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const lastPassedCardRef = useRef(gameRoom?.game_state?.last_passed_card);
+  const [toastMsg, setToastMsg] = useState("");
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 2000);
+  };
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
@@ -75,26 +82,47 @@ export default function GameView({
     const handleCardClick = async () => {
       if (!isClickable || card === null) return;
 
-      // 🎵 Play pass sound immediately for smoother UX
+      const currentHand =
+        getRelativePlayers().find((p) => p.user_id === user.id)?.hand || [];
+
+      const lastPassedCard = gameRoom.game_state?.last_passed_card;
+
+      // ❌ Rule 1: Cannot pass the card you just received unless you have at least 1 more of that card
+      const receivedCard =
+        gameRoom.players[gameRoom.game_state?.last_receiver_index]?.id ===
+        user.id
+          ? lastPassedCard
+          : null;
+
+      const sameCardCount = currentHand.filter((c) => c === card).length;
+
+      if (receivedCard === card && sameCardCount <= 1) {
+        showToast("You can't pass the received card in same turn.");
+
+        return;
+      }
+
+      // ❌ Rule 2: Cannot pass the null card on the first move
+      if (card === "0" && lastPassedCard === null) {
+        showToast(
+          "You cannot pass the wolf card on the first move of the game."
+        );
+        return;
+      }
+
+      // ✅ Pass is allowed — proceed
       const audio = new Audio("/sounds/card-place-2.ogg");
       audio.play().catch(() => {});
       justPassedRef.current = true;
 
-      // 1. Get current hand from visible state
-      const currentHand =
-        getRelativePlayers().find((p) => p.user_id === user.id)?.hand || [];
-
-      // 2. Optimistically remove the selected card
       const updatedHand = [...currentHand];
       const cardIndex = updatedHand.indexOf(card);
       if (cardIndex !== -1) updatedHand.splice(cardIndex, 1);
       setOptimisticHand(updatedHand);
 
-      // 3. Predict next turn (clockwise)
       const nextTurn = (meIndex + 1) % gameRoom.players.length;
       setOptimisticTurnIndex(nextTurn);
 
-      // 4. Send to API
       const res = await fetch("/api/pass-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,7 +131,6 @@ export default function GameView({
 
       const data = await res.json();
 
-      // 5. On failure, rollback optimistic state
       if (!res.ok) {
         alert(data.error || "Failed to pass card.");
         setOptimisticHand([]);
@@ -147,6 +174,7 @@ export default function GameView({
 
     return (
       <div className='w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center'>
+        {toastMsg && <Toast message={toastMsg} />}
         {clockwiseOrder.map((player, pos) => {
           const globalIndex = gameRoom.players.findIndex(
             (p) => p.id === player.user_id
@@ -221,6 +249,7 @@ export default function GameView({
 
   return (
     <div className='relative w-full h-[90vh] flex items-center justify-center mt-10'>
+      {toastMsg && <Toast message={toastMsg} />}
       {getRelativePlayers().map((player, pos) => {
         const globalIndex = gameRoom.players.findIndex(
           (p) => p.id === player.user_id
