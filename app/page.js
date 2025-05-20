@@ -39,10 +39,6 @@ export default function Home() {
     });
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
 
   const handleCreateGame = async () => {
     setLoading(true);
@@ -107,7 +103,7 @@ export default function Home() {
       ) : (
         <button onClick={handleLogin} className='mt-3 inline-block'>
           <Image
-            src='/assets/loginwithTwitter2.png'
+            src='/assets/twitterLogin.png'
             alt='Log in with Twitter'
             width={300}
             height={80}
