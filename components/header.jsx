@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import supabase from "@/lib/supabaseClient";
-import modalBg from "../public/assets/modalBg.png";
+import modalBg from "../public/assets/modalBG.png";
 
 export default function Header({ showLogo = false, showHamburger = false }) {
   const modalRef = useRef();
