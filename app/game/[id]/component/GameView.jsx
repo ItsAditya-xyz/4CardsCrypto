@@ -14,6 +14,7 @@ export default function GameView({
   getPlayerInfo,
   id,
   winnerId,
+  playerStates,
 }) {
   const justPassedRef = useRef(false);
   const [optimisticHand, setOptimisticHand] = useState([]);
@@ -49,7 +50,7 @@ export default function GameView({
   useEffect(() => {
     setOptimisticHand([]);
     setOptimisticTurnIndex(null);
-  }, [getRelativePlayers]);
+  }, [playerStates]);
 
   useEffect(() => {
     const current = gameRoom?.game_state?.last_passed_card;
