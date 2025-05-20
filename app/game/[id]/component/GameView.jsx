@@ -14,6 +14,8 @@ export default function GameView({
   id,
   winnerId,
 }) {
+  const [optimisticHand, setOptimisticHand] = useState([]);
+  const [optimisticTurnIndex, setOptimisticTurnIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const lastPassedCardRef = useRef(gameRoom?.game_state?.last_passed_card);
   useEffect(() => {
@@ -25,16 +27,21 @@ export default function GameView({
 
   useEffect(() => {
     if (gameRoom?.status !== "completed" || !user || !winnerId) return;
-    console.log("about to play sound for game completion...")
+    console.log("about to play sound for game completion...");
     const isWinner = user.id === winnerId;
     const audio = new Audio(
       isWinner ? "/sounds/winSound.ogg" : "/sounds/loseSound.ogg"
     );
-    
+
     audio.play().catch(() => {}); // Suppress autoplay errors
-   
+
     // audio.play().catch(() => {}); // Suppress autoplay errors
   }, [gameRoom?.status, winnerId, user?.id]);
+
+  useEffect(() => {
+  setOptimisticHand([]);
+  setOptimisticTurnIndex(null);
+}, [gameRoom?.game_state?.turn_index]);
 
   useEffect(() => {
     const current = gameRoom?.game_state?.last_passed_card;
@@ -50,7 +57,7 @@ export default function GameView({
   }, [gameRoom?.game_state?.last_passed_card]);
 
   const isMyTurn =
-    gameRoom.game_state?.turn_index === meIndex &&
+    (optimisticTurnIndex ?? gameRoom.game_state?.turn_index) === meIndex &&
     gameRoom.status === "running";
 
   const renderCard = (
@@ -63,6 +70,21 @@ export default function GameView({
     const handleCardClick = async () => {
       if (!isClickable || card === null) return;
 
+      // 1. Get current hand from visible state
+      const currentHand =
+        getRelativePlayers().find((p) => p.user_id === user.id)?.hand || [];
+
+      // 2. Optimistically remove the selected card
+      const updatedHand = [...currentHand];
+      const cardIndex = updatedHand.indexOf(card);
+      if (cardIndex !== -1) updatedHand.splice(cardIndex, 1);
+      setOptimisticHand(updatedHand);
+
+      // 3. Predict next turn (clockwise)
+      const nextTurn = (meIndex + 1) % gameRoom.players.length;
+      setOptimisticTurnIndex(nextTurn);
+
+      // 4. Send to API
       const res = await fetch("/api/pass-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,10 +92,13 @@ export default function GameView({
       });
 
       const data = await res.json();
-      if (!res.ok) alert(data.error || "Failed to pass card.");
 
-      // const audio = new Audio("/sounds/card-slide-5.ogg");
-      // audio.play().catch((err) => console.error("Audio play failed:", err));
+      // 5. On failure, rollback optimistic state
+      if (!res.ok) {
+        alert(data.error || "Failed to pass card.");
+        setOptimisticHand([]);
+        setOptimisticTurnIndex(null);
+      }
     };
 
     return (
@@ -126,7 +151,8 @@ export default function GameView({
             player.user_id;
 
           if (gameRoom.status === "completed" || isMe) {
-            cards = player.hand;
+            cards =
+              isMe && optimisticHand.length > 0 ? optimisticHand : player.hand;
           } else if (isLastReceiver) {
             // Show one revealed card for the last receiver
             let injected = false;
@@ -146,7 +172,7 @@ export default function GameView({
             <div
               key={player.user_id}
               className='w-full bg-[#0b1e2e]/80 p-3 shadow-md flex flex-col items-center relative transition-transform duration-300'>
-              <div className='flex flex-col items-center mb-2'>
+              <div className='flex flex-row space-x-1 items-center mb-2'>
                 <Image
                   src={playerInfo?.avatar_url || "/default-pfp.png"}
                   alt='avatar'
@@ -157,12 +183,13 @@ export default function GameView({
                 <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
                   @{playerInfo?.user_name || "player"}
                 </p>
-                {winnerId === player.user_id && (
-                  <p className='text-xs text-yellow-400 font-bold animate-bounce mt-1'>
+               
+              </div>
+               {winnerId === player.user_id && (
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce my-1'>
                     🏆 Winner!
                   </p>
                 )}
-              </div>
               <div className='grid grid-cols-2 gap-2'>
                 {cards.map((card, i) =>
                   renderCard(
@@ -199,7 +226,8 @@ export default function GameView({
           player.user_id;
 
         if (gameRoom.status === "completed" || isMe) {
-          cards = player.hand;
+          cards =
+            isMe && optimisticHand.length > 0 ? optimisticHand : player.hand;
         } else if (isLastReceiver) {
           // Show one revealed card for the last receiver
           let injected = false;
@@ -255,7 +283,7 @@ export default function GameView({
                   </p>
                 </div>
                 {winnerId === player.user_id && (
-                  <p className='text-xs text-yellow-400 font-bold animate-bounce text-center mt-1'>
+                  <p className='text-xs text-yellow-400 font-bold animate-bounce text-center my-1'>
                     🏆 Winner!
                   </p>
                 )}
