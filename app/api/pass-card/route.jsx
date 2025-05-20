@@ -27,7 +27,10 @@ export async function POST(req) {
   }
 
   if (room.status === "completed") {
-    return NextResponse.json({ error: "Game already completed" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Game already completed" },
+      { status: 400 }
+    );
   }
 
   const gameState = room.game_state;
@@ -48,8 +51,10 @@ export async function POST(req) {
   if (psError || !playerStates || playerStates.length !== 4) {
     console.log("Player states error:", psError);
     console.log("Player states:", playerStates);
-
-    return NextResponse.json({ error: "Invalid player states" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Invalid player states" },
+      { status: 500 }
+    );
   }
 
   const currentPlayer = playerStates.find((p) => p.user_id === user.id);
@@ -61,36 +66,41 @@ export async function POST(req) {
   const cardCount = hand.filter((c) => c === card).length;
   const isFirstMove = gameState.last_passed_card === null;
 
-  // ❌ Rule: Cannot pass 0 on first move
   if (isFirstMove && card === "0") {
-    return NextResponse.json({ error: "Cannot pass '0' on first move" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Cannot pass '0' on first move" },
+      { status: 400 }
+    );
   }
 
-  // ❌ Rule: Cannot pass back last received card unless holding >1
   if (currentPlayer.last_received === card && cardCount < 2) {
-    return NextResponse.json({
-      error: "Can't pass back the card you just received unless you have more than one",
-    }, { status: 400 });
+    return NextResponse.json(
+      {
+        error:
+          "Can't pass back the card you just received unless you have more than one",
+      },
+      { status: 400 }
+    );
   }
 
-  // ❌ Rule: Must have the card
   const cardIndex = hand.indexOf(card);
   if (cardIndex === -1) {
     return NextResponse.json({ error: "Card not in hand" }, { status: 400 });
   }
 
-  // ✅ Move card
-  const newSenderHand = [...hand.slice(0, cardIndex), ...hand.slice(cardIndex + 1)];
+  const newSenderHand = [
+    ...hand.slice(0, cardIndex),
+    ...hand.slice(cardIndex + 1),
+  ];
   const newReceiverHand = [...nextPlayer.hand, card];
 
-  // 🏆 Check win
   const counts = newReceiverHand.reduce((acc, c) => {
     acc[c] = (acc[c] || 0) + 1;
     return acc;
   }, {});
-  const hasWon = Object.values(counts).some((n) => n === 4);
+  const winningCard = Object.keys(counts).find((c) => counts[c] === 4);
+  const hasWon = Boolean(winningCard);
 
-  // 🔁 Update both player states
   const { error: senderErr } = await supabaseAdmin
     .from("player_states")
     .update({ hand: newSenderHand })
@@ -111,7 +121,6 @@ export async function POST(req) {
     return NextResponse.json({ error: "Failed to pass card" }, { status: 500 });
   }
 
-  // 🧠 Update game state
   const newGameState = {
     ...gameState,
     turn_index: nextIndex,
@@ -124,14 +133,21 @@ export async function POST(req) {
     .from("game_rooms")
     .update({
       game_state: newGameState,
-      ...(hasWon && { status: "completed" }),
+      ...(hasWon && {
+        status: "completed",
+        winner_id: nextPlayer.user_id,
+        card_collected: winningCard,
+      }),
     })
     .eq("id", roomId)
-    .filter("game_state->>turn_index", "eq", String(currentIndex)); // safe concurrent updates
+    .filter("game_state->>turn_index", "eq", String(currentIndex)); // concurrency safe
 
   if (gameUpdateError) {
     console.error("Game state update failed:", gameUpdateError);
-    return NextResponse.json({ error: "Failed to update game state" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update game state" },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({

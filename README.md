@@ -59,3 +59,9 @@ todo:
 - profile page showing game history!
 - ability to join free room available (public room)
 - real time visibility of game
+
+
+4: 1000
+3: 800
+2: 700
+1: 500

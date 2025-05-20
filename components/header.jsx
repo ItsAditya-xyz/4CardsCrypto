@@ -71,12 +71,16 @@ export default function Header({ showLogo = false, showHamburger = false }) {
               />
             </button>
           ) : (
-            <button onClick={() => setOpenModal(true)} className='flex items-center gap-2'>
+            <button
+              onClick={() => setOpenModal(true)}
+              className='flex items-center gap-2'>
               <p className='font-medium text-gray-100 mb-2'>
                 GM, {user.user_metadata?.user_name || "Player"}
               </p>
               <Image
-                src={user.user_metadata?.avatar_url || "/assets/default-avatar.png"}
+                src={
+                  user.user_metadata?.avatar_url || "/assets/default-avatar.png"
+                }
                 alt='Avatar'
                 width={40}
                 height={40}
@@ -89,7 +93,9 @@ export default function Header({ showLogo = false, showHamburger = false }) {
 
       {openModal && (
         <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center'>
-          <div ref={modalRef} className='relative w-[380px] h-[480px] sm:w-[420px] sm:h-[500px]'>
+          <div
+            ref={modalRef}
+            className='relative w-[380px] h-[480px] sm:w-[420px] sm:h-[500px]'>
             <Image
               src={modalBg}
               alt='Modal Background'
@@ -100,28 +106,24 @@ export default function Header({ showLogo = false, showHamburger = false }) {
               <Link
                 href='/'
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'
-              >
+                className='hover:underline font-bold'>
                 Home
               </Link>
               <Link
-                href='/profile'
+                href={`/u/${user?.user_metadata?.user_name || "player"}`}
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'
-              >
+                className='hover:underline font-bold'>
                 Profile
               </Link>
               <Link
                 href='/leaderboard'
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'
-              >
+                className='hover:underline font-bold'>
                 Leaderboards
               </Link>
               <button
                 onClick={handleLogout}
-                className='text-red-600 hover:text-red-700 font-semibold'
-              >
+                className='text-red-600 hover:text-red-700 font-semibold'>
                 Log out
               </button>
             </div>
