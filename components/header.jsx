@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import supabase from "@/lib/supabaseClient";
 
-export default function Header() {
+export default function Header({ showLogo = false }) {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -13,7 +14,6 @@ export default function Header() {
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
-
       console.log("user:", data?.user);
       setUser(data?.user || null);
     };
@@ -26,38 +26,60 @@ export default function Header() {
     router.refresh();
   };
 
-  if (!user) return null;
-
   return (
-    <div className="absolute top-4 right-4 z-50">
-      <div className="relative">
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-2"
-        >
-          <p className="font-medium text-gray-100 mb-2">
-            GM, {user.user_metadata?.user_name || "Player"}
-          </p>
-          <Image
-            src={user.user_metadata?.avatar_url || "/assets/default-avatar.png"}
-            alt="Avatar"
-            width={40}
-            height={40}
-            className="rounded-full border-2 border-white hover:opacity-90 transition"
-          />
-        </button>
+    <div className="mt-2">
 
-        {open && (
-          <div className="absolute right-0 mt-2 bg-white border rounded-md shadow-md p-3 text-sm min-w-[160px]">
+  
+      {showLogo && (
+        <Link
+          href="/"
+          className="absolute top-4 left-4 z-50 block"
+        >
+          <Image
+            src="/assets/logo.png"
+            alt="Logo"
+            width={100}
+            height={100}
+            className="hover:opacity-90 transition"
+          />
+        </Link>
+      )}
+
+      {user && (
+        <div className="absolute top-4 right-4 z-50">
+          <div className="relative">
             <button
-              onClick={handleLogout}
-              className="text-red-500 hover:underline"
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-2"
             >
-              Log out
+              <p className="font-medium text-gray-100 mb-2">
+                GM, {user.user_metadata?.user_name || "Player"}
+              </p>
+              <Image
+                src={
+                  user.user_metadata?.avatar_url ||
+                  "/assets/default-avatar.png"
+                }
+                alt="Avatar"
+                width={40}
+                height={40}
+                className="rounded-full border-2 border-white hover:opacity-90 transition"
+              />
             </button>
+
+            {open && (
+              <div className="absolute right-0 mt-2 bg-white border rounded-md shadow-md p-3 text-sm min-w-[160px]">
+                <button
+                  onClick={handleLogout}
+                  className="text-red-500 hover:underline"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

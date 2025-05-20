@@ -51,4 +51,11 @@ Let me know if you'd like to show these in-game via a rules button or modal!
 
 
 
+todo:
 
+- game_rooms table where a player cannot insert anythying.
+- game_state table where a player cannot insert anythying either. 
+- leaderboards page. 
+- profile page showing game history!
+- ability to join free room available (public room)
+- real time visibility of game

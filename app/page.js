@@ -69,17 +69,22 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center text-white  gap-6"
+      className=' w-full flex flex-col items-center justify-center text-white h-screen overflow-y-hidden gap-6'
       style={{
         backgroundImage: "url(/assets/background.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
-      }}
-    >
+      }}>
       <Header />
-      <Image src="/assets/logo.png" alt="Game Logo" width={500} height={400} className="" />
+      <Image
+        src='/assets/logo.png'
+        alt='Game Logo'
+        width={500}
+        height={400}
+        className=''
+      />
 
-      <p className="text-center text-green-100 max-w-md drop-shadow-sm ">
+      <p className='text-center text-green-100 max-w-md drop-shadow-sm '>
         A 4-player strategic card game. Collect 4 of a kind, pass cards wisely,
         and outsmart your friends to win the crypto pot 💰
       </p>
@@ -88,26 +93,25 @@ export default function Home() {
         <button
           onClick={handleCreateGame}
           disabled={loading}
-          className="mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer"
-        >
+          className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer'>
           <Image
-            src="/assets/createGameRoom.png"
-            alt="Create Game"
+            src='/assets/createGameRoom.png'
+            alt='Create Game'
             width={300}
             height={80}
-            className="transition-all duration-200 ease-in-out 
+            className='transition-all duration-200 ease-in-out 
              group-hover:scale-105 group-hover:-translate-y-1 
-             group-hover:opacity-90 group-active:scale-95"
+             group-hover:opacity-90 group-active:scale-95'
           />
         </button>
       ) : (
-        <button onClick={handleLogin} className="mt-3 inline-block">
+        <button onClick={handleLogin} className='mt-3 inline-block'>
           <Image
-            src="/assets/loginwithTwitter2.png"
-            alt="Log in with Twitter"
+            src='/assets/loginwithTwitter2.png'
+            alt='Log in with Twitter'
             width={300}
             height={80}
-            className="transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer"
+            className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
           />
         </button>
       )}

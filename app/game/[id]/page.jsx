@@ -183,7 +183,7 @@ const getRelativePlayers = () => {
 };
 
   return (
-    <div className="relative min-h-screen bg-gray-950 text-white overflow-hidden">
+    <div className="relative h-screen overflow-y-hidden bg-gray-950 text-white overflow-hidden">
       <Image
         src="/assets/background.png"
         alt="Background"

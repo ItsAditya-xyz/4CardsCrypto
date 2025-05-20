@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRef } from "react";
 
 export default function GameView({
   gameRoom,
@@ -12,16 +13,41 @@ export default function GameView({
   getPlayerInfo,
   id,
   winnerId,
-  playerStates,
 }) {
   const [isMobile, setIsMobile] = useState(false);
-
+  const lastPassedCardRef = useRef(gameRoom?.game_state?.last_passed_card);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (gameRoom?.status !== "completed" || !user || !winnerId) return;
+    console.log("about to play sound for game completion...")
+    const isWinner = user.id === winnerId;
+    const audio = new Audio(
+      isWinner ? "/sounds/winSound.ogg" : "/sounds/loseSound.ogg"
+    );
+    
+    audio.play().catch(() => {}); // Suppress autoplay errors
+   
+    // audio.play().catch(() => {}); // Suppress autoplay errors
+  }, [gameRoom?.status, winnerId, user?.id]);
+
+  useEffect(() => {
+    const current = gameRoom?.game_state?.last_passed_card;
+    if (
+      current &&
+      lastPassedCardRef.current !== undefined &&
+      current !== lastPassedCardRef.current
+    ) {
+      const audio = new Audio("/sounds/card-place-2.ogg");
+      audio.play().catch(() => {}); // suppress autoplay errors
+    }
+    lastPassedCardRef.current = current;
+  }, [gameRoom?.game_state?.last_passed_card]);
 
   const isMyTurn =
     gameRoom.game_state?.turn_index === meIndex &&
@@ -45,6 +71,9 @@ export default function GameView({
 
       const data = await res.json();
       if (!res.ok) alert(data.error || "Failed to pass card.");
+
+      // const audio = new Audio("/sounds/card-slide-5.ogg");
+      // audio.play().catch((err) => console.error("Audio play failed:", err));
     };
 
     return (
@@ -82,7 +111,7 @@ export default function GameView({
     const clockwiseOrder = [all[2], all[3], all[1], all[0]];
 
     return (
-      <div className='w-full min-h-[100vh] grid grid-cols-2 justify-items-center'>
+      <div className='w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center'>
         {clockwiseOrder.map((player, pos) => {
           const globalIndex = gameRoom.players.findIndex(
             (p) => p.id === player.user_id
@@ -214,16 +243,16 @@ export default function GameView({
                     <div className='mb-2 text-yellow-300 text-sm text-center animate-ping-slow'></div>
                   )}
                 <div className='flex flex-row justify-center items-center space-x-1 mb-2'>
-                <Image
-                  src={playerInfo?.avatar_url || "/default-pfp.png"}
-                  alt='avatar'
-                  width={40}
-                  height={40}
-                  className='rounded-full border border-white/30'
-                />
-                <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
-                  @{playerInfo?.user_name || "player"}
-                </p>
+                  <Image
+                    src={playerInfo?.avatar_url || "/default-pfp.png"}
+                    alt='avatar'
+                    width={40}
+                    height={40}
+                    className='rounded-full border border-white/30'
+                  />
+                  <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
+                    @{playerInfo?.user_name || "player"}
+                  </p>
                 </div>
                 {winnerId === player.user_id && (
                   <p className='text-xs text-yellow-400 font-bold animate-bounce text-center mt-1'>
