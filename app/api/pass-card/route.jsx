@@ -16,7 +16,7 @@ export async function POST(req) {
   const { roomId, card } = await req.json();
 
   // Fetch game room
-  const { data: room, error: roomError } = await supabase
+  const { data: room, error: roomError } = await supabaseAdmin
     .from("game_rooms")
     .select("*")
     .eq("id", roomId)
@@ -120,7 +120,7 @@ export async function POST(req) {
     last_sender_index: currentIndex,
   };
 
-  const { error: gameUpdateError } = await supabase
+  const { error: gameUpdateError } = await supabaseAdmin
     .from("game_rooms")
     .update({
       game_state: newGameState,

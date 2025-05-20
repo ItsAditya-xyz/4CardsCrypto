@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server"
 
 import { createClient } from "@/lib/supabaseServer"
+import supabaseAdmin from "@/lib/supabaseAdmin"
 
 export async function POST(req) {
   const supabase = await createClient()
@@ -27,7 +28,7 @@ export async function POST(req) {
     avatar_url: user_metadata?.avatar_url || "/default-pfp.png",
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("game_rooms")
     .insert([
       {

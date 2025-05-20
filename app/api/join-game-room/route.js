@@ -17,13 +17,14 @@ export async function POST(req) {
 
   const { roomId } = await req.json();
 
-  const { data: room, error: roomError } = await supabase
+  const { data: room, error: roomError } = await supabaseAdmin
     .from("game_rooms")
     .select("*")
     .eq("id", roomId)
     .single();
 
   if (roomError || !room) {
+    console.log("Room not found:", roomError);
     return NextResponse.json({ error: "Game room not found" }, { status: 404 });
   }
 

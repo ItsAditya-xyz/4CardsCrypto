@@ -1,6 +1,7 @@
 // get-game-room (fixed for null-safe game_state)
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
+import supabaseAdmin from "@/lib/supabaseAdmin";
 
 export async function POST(req) {
   const supabase = await createClient();
@@ -23,6 +24,7 @@ export async function POST(req) {
     .single();
 
   if (roomError || !room) {
+    console.log("Room not found:", roomError);
     return NextResponse.json({ error: "Game room not found" }, { status: 404 });
   }
 

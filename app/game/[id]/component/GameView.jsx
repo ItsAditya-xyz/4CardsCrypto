@@ -14,6 +14,7 @@ export default function GameView({
   id,
   winnerId,
 }) {
+  const justPassedRef = useRef(false);
   const [optimisticHand, setOptimisticHand] = useState([]);
   const [optimisticTurnIndex, setOptimisticTurnIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -39,9 +40,9 @@ export default function GameView({
   }, [gameRoom?.status, winnerId, user?.id]);
 
   useEffect(() => {
-  setOptimisticHand([]);
-  setOptimisticTurnIndex(null);
-}, [gameRoom?.game_state?.turn_index]);
+    setOptimisticHand([]);
+    setOptimisticTurnIndex(null);
+  }, [getRelativePlayers]);
 
   useEffect(() => {
     const current = gameRoom?.game_state?.last_passed_card;
@@ -50,8 +51,12 @@ export default function GameView({
       lastPassedCardRef.current !== undefined &&
       current !== lastPassedCardRef.current
     ) {
-      const audio = new Audio("/sounds/card-place-2.ogg");
-      audio.play().catch(() => {}); // suppress autoplay errors
+      if (justPassedRef.current) {
+        justPassedRef.current = false; // reset after skipping
+      } else {
+        const audio = new Audio("/sounds/card-place-2.ogg");
+        audio.play().catch(() => {});
+      }
     }
     lastPassedCardRef.current = current;
   }, [gameRoom?.game_state?.last_passed_card]);
@@ -69,6 +74,11 @@ export default function GameView({
   ) => {
     const handleCardClick = async () => {
       if (!isClickable || card === null) return;
+
+      // 🎵 Play pass sound immediately for smoother UX
+      const audio = new Audio("/sounds/card-place-2.ogg");
+      audio.play().catch(() => {});
+      justPassedRef.current = true;
 
       // 1. Get current hand from visible state
       const currentHand =
@@ -141,7 +151,9 @@ export default function GameView({
           const globalIndex = gameRoom.players.findIndex(
             (p) => p.id === player.user_id
           );
-          const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
+          const isCurrentTurn =
+            (optimisticTurnIndex ?? gameRoom.game_state?.turn_index) ===
+            globalIndex;
           const isMe = player.user_id === user.id;
           const playerInfo = getPlayerInfo(player.user_id);
           let cards;
@@ -183,13 +195,12 @@ export default function GameView({
                 <p className='text-sm text-white mt-1 truncate text-center max-w-[100px]'>
                   @{playerInfo?.user_name || "player"}
                 </p>
-               
               </div>
-               {winnerId === player.user_id && (
-                  <p className='text-xs text-yellow-400 font-bold animate-bounce my-1'>
-                    🏆 Winner!
-                  </p>
-                )}
+              {winnerId === player.user_id && (
+                <p className='text-xs text-yellow-400 font-bold animate-bounce my-1'>
+                  🏆 Winner!
+                </p>
+              )}
               <div className='grid grid-cols-2 gap-2'>
                 {cards.map((card, i) =>
                   renderCard(
@@ -214,7 +225,9 @@ export default function GameView({
         const globalIndex = gameRoom.players.findIndex(
           (p) => p.id === player.user_id
         );
-        const isCurrentTurn = gameRoom.game_state?.turn_index === globalIndex;
+        const isCurrentTurn =
+          (optimisticTurnIndex ?? gameRoom.game_state?.turn_index) ===
+          globalIndex;
         const isMe = player.user_id === user.id;
         const playerInfo = getPlayerInfo(player.user_id);
         // const actualHand =
