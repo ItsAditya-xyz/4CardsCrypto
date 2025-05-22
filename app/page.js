@@ -102,7 +102,7 @@ export default function Home() {
         </button>
       ) : (
         <>
-        <button onClick={handleLogin} className='mt-3 inline-block bg-red-500'>
+        <button onClick={handleLogin} className='mt-3 inline-block '>
           <Image
             src='/assets/loginwithtwitterFinal.png'
             alt='Log in with Twitter'
