@@ -80,10 +80,10 @@ export default function Home() {
         className=''
       />
 
-      <p className='text-center text-green-100 max-w-md drop-shadow-sm '>
-        A 4-player strategic card game. Collect 4 of a kind, pass cards wisely,
-        and outsmart your friends to win the crypto pot 💰
-      </p>
+     <p className='text-center text-green-100 max-w-md drop-shadow-md font-bold text-lg'>
+  A 4-player strategic card game. Collect 4 of a kind, pass cards wisely, and outsmart your friends to win the crypto pot 💰
+</p>
+
 
       {user ? (
         <button
@@ -101,15 +101,19 @@ export default function Home() {
           />
         </button>
       ) : (
-        <button onClick={handleLogin} className='mt-3 inline-block'>
+        <>
+        <button onClick={handleLogin} className='mt-3 inline-block bg-red-500'>
           <Image
-            src='/assets/twitterLogin.png'
+            src='/assets/loginwithtwitterFinal.png'
             alt='Log in with Twitter'
             width={300}
             height={80}
             className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
           />
         </button>
+
+     
+        </>
       )}
     </div>
   );
