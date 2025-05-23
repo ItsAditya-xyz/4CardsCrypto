@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-
+import { distributeCards } from "@/lib/distributeCards";
 const cardTypes = [
   { id: 1, name: "Dog", image: "/assets/dog.webp", points: 1000 },
   { id: 2, name: "Cat", image: "/assets/cat.jpg", points: 850 },
@@ -15,57 +15,32 @@ const generateCardImage = (id) =>
   cardTypes.find((c) => c.id === parseInt(id)) || cardTypes[4];
 
 export default function TestGamePage() {
-  const createInitialPlayers = () => {
-    const fullDeck = [
-      "1",
-      "1",
-      "1",
-      "1",
-      "2",
-      "2",
-      "2",
-      "2",
-      "3",
-      "3",
-      "3",
-      "3",
-      "4",
-      "4",
-      "4",
-      "4",
-      "0",
-    ];
+const createInitialPlayers = () => {
+  const players = [
+    { id: "p1", name: "Player A" },
+    { id: "p2", name: "Player B" },
+    { id: "p3", name: "Player C" },
+    { id: "p4", name: "Player D" },
+  ];
 
-    const shuffle = (arr) => {
-      let newArr = [...arr];
-      for (let i = newArr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-      }
-      return newArr;
-    };
+  const { playerStates, turnIndex } = distributeCards(players);
 
-    const deck = shuffle(fullDeck);
-    const nullIndex = deck.indexOf("0");
-    const player0Hand = deck.splice(nullIndex, 1);
-    player0Hand.push(...deck.splice(0, 4));
+  const fullPlayers = players.map((p, index) => ({
+    ...p,
+    hand: playerStates[index].hand,
+  }));
 
-    const playerHands = [[], [], [], []];
-    playerHands[0] = player0Hand;
-    for (let i = 1; i < 4; i++) {
-      playerHands[i] = deck.splice(0, 4);
-    }
-
-    return [
-      { name: "Player A", hand: player0Hand },
-      { name: "Player B", hand: playerHands[1] },
-      { name: "Player C", hand: playerHands[2] },
-      { name: "Player D", hand: playerHands[3] },
-    ];
+  return {
+    fullPlayers,
+    startingTurn: turnIndex,
   };
+};
 
-  const [players, setPlayers] = useState(createInitialPlayers);
-  const [currentTurn, setCurrentTurn] = useState(0);
+const init = createInitialPlayers();
+const [players, setPlayers] = useState(init.fullPlayers);
+const [currentTurn, setCurrentTurn] = useState(init.startingTurn);
+
+
   const [lastPassedCard, setLastPassedCard] = useState(null);
   const [lastReceiver, setLastReceiver] = useState(null);
   const [winner, setWinner] = useState(null);
@@ -77,14 +52,14 @@ export default function TestGamePage() {
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);
   }, []);
-
-  const resetGame = () => {
-    setPlayers(createInitialPlayers());
-    setCurrentTurn(0);
-    setLastPassedCard(null);
-    setLastReceiver(null);
-    setWinner(null);
-  };
+const resetGame = () => {
+  const init = createInitialPlayers();
+  setPlayers(init.fullPlayers);
+  setCurrentTurn(init.startingTurn);
+  setLastPassedCard(null);
+  setLastReceiver(null);
+  setWinner(null);
+};
 
   const passCard = (playerIndex, cardIndex) => {
     if (winner !== null) return;

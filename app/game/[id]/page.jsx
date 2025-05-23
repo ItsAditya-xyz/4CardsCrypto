@@ -19,6 +19,16 @@ export default function GameRoomPage() {
   const [inGame, setInGame] = useState(false);
   const [hasTriedJoining, setHasTriedJoining] = useState(false);
 
+  const preloadSound = (src) => {
+    const audio = new Audio(src);
+    audio.load();
+  };
+  useEffect(() => {
+    preloadSound("/sounds/card-place-2.ogg");
+    preloadSound("/sounds/winSound.ogg");
+    preloadSound("/sounds/loseSound.ogg");
+  }, []);
+
   const cardAssets = {
     0: "Null.png",
     1: "dog.webp",
@@ -172,15 +182,15 @@ export default function GameRoomPage() {
     );
   }
 
-const meIndex = gameRoom.players.findIndex((p) => p.id === user.id);
-const getRelativePlayers = () => {
-  const merged = gameRoom.players.map((p) => {
-    const matchingState = playerStates.find((s) => s.user_id === p.id);
-    return matchingState || { user_id: p.id, hand: [], last_received: null };
-  });
+  const meIndex = gameRoom.players.findIndex((p) => p.id === user.id);
+  const getRelativePlayers = () => {
+    const merged = gameRoom.players.map((p) => {
+      const matchingState = playerStates.find((s) => s.user_id === p.id);
+      return matchingState || { user_id: p.id, hand: [], last_received: null };
+    });
 
-  return [...merged.slice(meIndex), ...merged.slice(0, meIndex)];
-};
+    return [...merged.slice(meIndex), ...merged.slice(0, meIndex)];
+  };
 
   return (
     <div className="relative h-screen overflow-y-hidden bg-gray-950 text-white overflow-hidden">
