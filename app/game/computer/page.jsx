@@ -6,6 +6,7 @@ import { distributeCards } from "@/lib/distributeCards";
 import Toast from "@/components/toast";
 import Header from "@/components/header";
 import modalBg from "@/public/assets/modalBG.png";
+import playAgainImg from "@/public/assets/playAgain.png";
 
 const cardTypes = [
   { id: 1, name: "Dog", image: "/assets/dog.webp", points: 1000 },
@@ -22,9 +23,9 @@ export default function GameVsComputer() {
   const createInitialPlayers = () => {
     const players = [
       { id: "p1", name: "You" },
-      { id: "p2", name: "Bot B" },
-      { id: "p3", name: "Bot C" },
-      { id: "p4", name: "Bot D" },
+      { id: "p2", name: "OpenAI" },
+      { id: "p3", name: "Claude" },
+      { id: "p4", name: "Devin" },
     ];
 
     const { playerStates, turnIndex } = distributeCards(players);
@@ -279,8 +280,14 @@ export default function GameVsComputer() {
                 </h2>
                 <button
                   onClick={resetGame}
-                  className='mt-4 px-6 py-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 font-semibold'>
-                  Play Again
+                  className='mt-4 rounded-full hover:scale-105 transition-transform hover:cursor-pointer'>
+                  <Image
+                    src={playAgainImg}
+                    alt='Play Again'
+                    width={180}
+                    height={60}
+                    className='object-contain'
+                  />
                 </button>
               </div>
             </div>
@@ -402,8 +409,14 @@ export default function GameVsComputer() {
               </h2>
               <button
                 onClick={resetGame}
-                className='mt-4 px-6 py-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 font-semibold hover:cursor-pointer'>
-                Play Again
+                className='mt-4 rounded-full hover:scale-105 transition-transform hover:cursor-pointer'>
+                <Image
+                  src={playAgainImg}
+                  alt='Play Again'
+                  width={180}
+                  height={60}
+                  className='object-contain'
+                />
               </button>
             </div>
           </div>

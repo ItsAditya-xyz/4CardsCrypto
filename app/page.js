@@ -6,16 +6,21 @@ import { useRouter } from "next/navigation";
 import supabase from "@/lib/supabaseClient";
 import Header from "@/components/header";
 import Link from "next/link";
-
+import Loader from "@/components/loader";
+import emptyButton from "@/public/assets/emptyButton.png";
+import { Plus, Eye, Bot } from "lucide-react";
 export default function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [creatatingGameRoom, setCreatingGameRoom] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
       setUser(data?.user || null);
+      setLoadingUser(false);
     };
 
     getUser();
@@ -41,7 +46,7 @@ export default function Home() {
   };
 
   const handleCreateGame = async () => {
-    setLoading(true);
+    setLoadingUser(true);
     try {
       const res = await fetch("/api/create-game-room", {
         method: "POST",
@@ -55,13 +60,11 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       alert("Failed to create game room.");
+      setLoadingUser(false);
     } finally {
-      setLoading(false);
+      // setLoadingUser(false);
     }
   };
-
-  const username = user?.user_metadata?.full_name || "Anon";
-  const avatar = user?.user_metadata?.avatar_url || "/default-pfp.png";
 
   return (
     <div
@@ -80,55 +83,81 @@ export default function Home() {
         className=''
       />
 
-      {!user && (
-        <p className='text-center text-green-100 max-w-md drop-shadow-md font-bold text-lg'>
-          A 4-player strategic card game. Collect 4 of a kind, pass cards
-          wisely, and outsmart your friends to win the crypto pot 💰
-        </p>
-      )}
+      {loadingUser && <Loader />}
 
-      {user ? (
-        <div className='flex flex-col items-center gap-2'>
-          <button
-            onClick={handleCreateGame}
-            disabled={loading}
-            className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer '>
-            <Image
-              src='/assets/createGameRoom2.png'
-              alt='Create Game'
-              width={200}
-              height={80}
-              className='transition-all duration-200 ease-in-out 
-             group-hover:scale-105 group-hover:-translate-y-1 
-             group-hover:opacity-90 group-active:scale-95'
-            />
-          </button>
-
-          <Link
-            href='/game/computer'
-            className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer '>
-            <Image
-              src='/assets/playVSComputer.png'
-              alt='Create Game'
-              width={200}
-              height={80}
-              className='transition-all duration-200 ease-in-out 
-             group-hover:scale-105 group-hover:-translate-y-1 
-             group-hover:opacity-90 group-active:scale-95'
-            />
-          </Link>
-        </div>
-      ) : (
+      {!loadingUser && (
         <>
-          <button onClick={handleLogin} className='mt-3 inline-block '>
-            <Image
-              src='/assets/loginwithtwitterFinal.png'
-              alt='Log in with Twitter'
-              width={300}
-              height={80}
-              className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
-            />
-          </button>
+          {!user && (
+            <p className='text-center text-green-100 max-w-md drop-shadow-md font-bold text-lg'>
+              A 4-player strategic card game. Collect 4 of a kind, pass cards
+              wisely, and outsmart your friends to win the crypto pot 💰
+            </p>
+          )}
+
+          {user ? (
+            <div className='flex flex-col items-center gap-2'>
+              {/* ➕ Create Game Room */}
+              <button
+                onClick={handleCreateGame}
+                disabled={loading}
+                className='relative w-[240px] h-[80px] group disabled:opacity-60 disabled:cursor-not-allowed hover:cursor-pointer transition-transform hover:scale-105'>
+                <Image
+                  src={emptyButton}
+                  alt='Create Game'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
+                  <Plus className='w-5 h-5' />
+                  Create Game Room
+                </span>
+              </button>
+
+              {/* 👁️ See Rooms */}
+              <Link
+                href='/game-room'
+                className='relative w-[240px] h-[80px] group disabled:opacity-60 disabled:cursor-not-allowed hover:cursor-pointer transition-transform hover:scale-105'>
+                <Image
+                  src={emptyButton}
+                  alt='See Rooms'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
+                  <Eye className='w-5 h-5' />
+                  See Rooms
+                </span>
+              </Link>
+
+              {/* 🤖 Play vs Computer */}
+              <Link
+                href='/game/computer'
+                className='relative w-[240px] h-[80px] group hover:cursor-pointer transition-transform hover:scale-105'>
+                <Image
+                  src={emptyButton}
+                  alt='Play vs Computer'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
+                  <Bot className='w-5 h-5' />
+                  Play vs Computer
+                </span>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <button onClick={handleLogin} className='mt-3 inline-block '>
+                <Image
+                  src='/assets/loginwithtwitterFinal.png'
+                  alt='Log in with Twitter'
+                  width={300}
+                  height={80}
+                  className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
+                />
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

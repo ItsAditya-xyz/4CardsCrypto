@@ -52,11 +52,15 @@ export default function UserProfilePage() {
 
       <main className='relative z-10 max-w-xl mx-auto mt-20'>
         {loading ? (
-         <Loader/>
+          <div className='flex items-center justify-center h-64'>
+              <Loader />
+            </div>
+        
         ) : !userData ? (
           <p className='text-center text-red-400'>User not found.</p>
         ) : (
-          <div className='bg-[#1e293b] border border-yellow-500/30 rounded-2xl p-6 shadow-xl text-center space-y-4'>
+          <div className='bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 shadow-md text-center space-y-4'>
+            {/* Avatar */}
             <a
               href={`https://x.com/${userData.user_name}`}
               target='_blank'
@@ -73,6 +77,7 @@ export default function UserProfilePage() {
               </div>
             </a>
 
+            {/* Username */}
             <a
               href={`https://x.com/${userData.user_name}`}
               target='_blank'
@@ -82,33 +87,39 @@ export default function UserProfilePage() {
               @{userData.user_name}
             </a>
 
+            {/* Full Name */}
             {userData.full_name && (
               <p className='text-white/80 text-sm'>{userData.full_name}</p>
             )}
 
+            {/* Stats */}
             <div className='grid grid-cols-2 gap-4 text-sm text-white/80'>
-              <div className='bg-[#334155] rounded-lg p-3'>
-                <p className='text-xs text-gray-400 mb-1'>Points</p>
+              <div className='bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-3'>
+                <p className='text-xs text-gray-900 mb-1'>Points</p>
                 <p className='text-lg text-yellow-400 font-bold'>
                   {userData.points}
                 </p>
               </div>
 
-              <div className='bg-[#334155] rounded-lg p-3'>
-                <p className='text-xs text-gray-400 mb-1'>Games Won</p>
+              <div className='bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-3'>
+                <p className='text-xs text-gray-900 mb-1'>Games Won</p>
                 <p className='text-lg text-green-400 font-bold'>
                   {userData.games_won}
                 </p>
               </div>
 
-              <div className='bg-[#334155] rounded-lg p-3 col-span-2'>
-                <p className='text-xs text-gray-400 mb-1'>Joined</p>
-                <p className='text-sm'>{formatDateTime(userData.created_at)}</p>
+              <div className='bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-3 col-span-2'>
+                <p className='text-xs text-gray-900 mb-1'>Joined</p>
+                <p className='text-sm'>
+                  {formatDateTime(userData.created_at)}
+                </p>
               </div>
 
-              <div className='bg-[#334155] rounded-lg p-3 col-span-2'>
-                <p className='text-xs text-gray-400 mb-1'>Last Login</p>
-                <p className='text-sm'>{formatDateTime(userData.last_login)}</p>
+              <div className='bg-white/10 backdrop-blur-md border border-white/10 rounded-lg p-3 col-span-2'>
+                <p className='text-xs text-gray-900 mb-1'>Last Login</p>
+                <p className='text-sm'>
+                  {formatDateTime(userData.last_login)}
+                </p>
               </div>
             </div>
           </div>

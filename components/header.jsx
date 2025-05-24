@@ -6,7 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import supabase from "@/lib/supabaseClient";
 import modalBg from "../public/assets/modalBG.png";
+import emptyButton from "../public/assets/emptyButton.png";
 
+import { Home, User, Trophy, LogOut } from "lucide-react";
 export default function Header({ showLogo = false, showHamburger = false }) {
   const modalRef = useRef();
   const [user, setUser] = useState(null);
@@ -47,7 +49,9 @@ export default function Header({ showLogo = false, showHamburger = false }) {
   return (
     <>
       {showLogo && (
-        <Link href='/' className='absolute top-4 left-4 z-50 block hover:cursor-pointer'>
+        <Link
+          href='/'
+          className='absolute top-4 left-4 z-50 block hover:cursor-pointer'>
           <Image
             src='/assets/logo.png'
             alt='Logo'
@@ -61,7 +65,9 @@ export default function Header({ showLogo = false, showHamburger = false }) {
       {user && (
         <div className='absolute top-1 right-4 z-50 '>
           {showHamburger ? (
-            <button onClick={() => setOpenModal(true)} className='p-2 hover:cursor-pointer'>
+            <button
+              onClick={() => setOpenModal(true)}
+              className='p-2 hover:cursor-pointer'>
               <Image
                 src='/assets/hamburger.png'
                 alt='Menu'
@@ -102,29 +108,65 @@ export default function Header({ showLogo = false, showHamburger = false }) {
               fill
               className='absolute inset-0 object-contain z-[-1] pointer-events-none'
             />
-            <div className='relative z-10 flex flex-col items-center justify-center h-full text-black text-center space-y-5 px-6 pt-12'>
+            <div className='relative z-10 flex flex-col items-center justify-center h-full text-black text-center  px-6 pt-12'>
               <Link
                 href='/'
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'>
-                Home
+                className='relative w-[200px] h-[60px] hover:scale-105 transition-transform'>
+                <Image
+                  src={emptyButton}
+                  alt='Home'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black'>
+                  <Home className='w-5 h-5' />
+                  Home
+                </span>
               </Link>
               <Link
                 href={`/u/${user?.user_metadata?.user_name || "player"}`}
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'>
-                Profile
+                className='relative w-[200px] h-[60px] hover:scale-105 transition-transform'>
+                <Image
+                  src={emptyButton}
+                  alt='Profile'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black'>
+                  <User className='w-5 h-5' />
+                  Profile
+                </span>
               </Link>
               <Link
                 href='/leaderboard'
                 onClick={() => setOpenModal(false)}
-                className='hover:underline font-bold'>
-                Leaderboards
+                className='relative w-[200px] h-[60px] hover:scale-105 transition-transform'>
+                <Image
+                  src={emptyButton}
+                  alt='Leaderboards'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black'>
+                  <Trophy className='w-5 h-5' />
+                  Leaderboards
+                </span>
               </Link>
               <button
                 onClick={handleLogout}
-                className='text-red-600 hover:text-red-700 font-semibold'>
-                Log out
+                className='relative w-[200px] h-[60px] hover:scale-105 transition-transform'>
+                <Image
+                  src={emptyButton}
+                  alt='Log Out'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-red-600'>
+                  <LogOut className='w-5 h-5' />
+                  Log out
+                </span>
               </button>
             </div>
           </div>

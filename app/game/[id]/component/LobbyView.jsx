@@ -2,13 +2,9 @@
 "use client";
 import Header from "@/components/header";
 import Image from "next/image";
-
-export default function LobbyView({
-  gameRoom,
-  user,
-  copied,
-  handleCopyLink,
-}) {
+import { Copy } from "lucide-react";
+import emptyButton from "@/public/assets/emptyButton.png";
+export default function LobbyView({ gameRoom, user, copied, handleCopyLink }) {
   console.log(user);
   return (
     <div className='h-screen overflow-y-hidden'>
@@ -34,12 +30,7 @@ export default function LobbyView({
           return (
             <div
               key={player.id}
-              className='p-4 rounded-3xl py-10 flex flex-col items-center border'
-              style={{
-                backgroundColor: colors[index % colors.length],
-                borderColor: "#282729",
-                borderWidth: "6px",
-              }}>
+              className='p-4 rounded-3xl py-10 flex flex-col items-center border border-white/20 backdrop-blur-lg bg-white/10 shadow-md transition-transform hover:scale-105'>
               <img
                 src={player.avatar_url || "/default-pfp.png"}
                 alt='avatar'
@@ -58,14 +49,17 @@ export default function LobbyView({
         <button
           onClick={handleCopyLink}
           disabled={copied}
-          className='inline-block disabled:opacity-60 group'>
+          className='relative w-[250px] h-[70px] group disabled:opacity-60 disabled:cursor-not-allowed hover:scale-105 transition-transform hover:cursor-pointer'>
           <Image
-            src='/assets/copy room link.png'
+            src={emptyButton}
             alt='Copy Link'
-            width={250}
-            height={80}
-            className='transition-all group-hover:scale-105 group-hover:-translate-y-1 hover:cursor-pointer'
+            fill
+            className='object-contain pointer-events-none'
           />
+          <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-sm'>
+            <Copy className='w-5 h-5' />
+            {copied ? "Copied!" : "Copy Room Link"}
+          </span>
         </button>
       </div>
     </div>

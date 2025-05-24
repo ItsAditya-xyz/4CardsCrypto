@@ -14,7 +14,7 @@ const Loader = () => {
                 transform: `translateY(${index * 2}px) rotate(${index * 5}deg)`,
               }}>
               {/* Card Inner Design */}
-              <div className='absolute inset-0.5 bg-gray-800 rounded-lg flex items-center justify-center'>
+              <div className='absolute inset-0.5 bg-[#08493E] rounded-lg flex items-center justify-center'>
                 <div className='w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-spin' />
               </div>
             </div>

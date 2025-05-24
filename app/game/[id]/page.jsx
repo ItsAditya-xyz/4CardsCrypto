@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import LobbyView from "./component/LobbyView";
 import GameView from "./component/GameView";
+import Loader from "@/components/loader";
 
 export default function GameRoomPage() {
   const router = useRouter();
@@ -176,8 +177,14 @@ export default function GameRoomPage() {
 
   if (loading || !user || !gameRoom) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-950 text-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
+      <div className='relative h-screen overflow-y-hidden bg-gray-950 text-white overflow-hidden flex items-center justify-center'>
+        <Image
+          src='/assets/background.png'
+          alt='Background'
+          fill
+          className='absolute inset-0 object-cover opacity-70 z-0'
+        />
+        <Loader />
       </div>
     );
   }
@@ -193,14 +200,14 @@ export default function GameRoomPage() {
   };
 
   return (
-    <div className="relative h-screen overflow-y-hidden bg-gray-950 text-white overflow-hidden">
+    <div className='relative h-screen overflow-y-hidden bg-gray-950 text-white overflow-hidden'>
       <Image
-        src="/assets/background.png"
-        alt="Background"
+        src='/assets/background.png'
+        alt='Background'
         fill
-        className="absolute inset-0 object-cover opacity-70 z-0"
+        className='absolute inset-0 object-cover opacity-70 z-0'
       />
-      <div className="relative z-10">
+      <div className='relative z-10'>
         {!inGame ? (
           <LobbyView
             gameRoom={gameRoom}
