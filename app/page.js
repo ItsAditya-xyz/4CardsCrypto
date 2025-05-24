@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import supabase from "@/lib/supabaseClient";
 import Header from "@/components/header";
+import Link from "next/link";
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -38,7 +39,6 @@ export default function Home() {
       },
     });
   };
-
 
   const handleCreateGame = async () => {
     setLoading(true);
@@ -80,39 +80,55 @@ export default function Home() {
         className=''
       />
 
-     <p className='text-center text-green-100 max-w-md drop-shadow-md font-bold text-lg'>
-  A 4-player strategic card game. Collect 4 of a kind, pass cards wisely, and outsmart your friends to win the crypto pot 💰
-</p>
-
+      {!user && (
+        <p className='text-center text-green-100 max-w-md drop-shadow-md font-bold text-lg'>
+          A 4-player strategic card game. Collect 4 of a kind, pass cards
+          wisely, and outsmart your friends to win the crypto pot 💰
+        </p>
+      )}
 
       {user ? (
-        <button
-          onClick={handleCreateGame}
-          disabled={loading}
-          className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer'>
-          <Image
-            src='/assets/createGameRoom.png'
-            alt='Create Game'
-            width={300}
-            height={80}
-            className='transition-all duration-200 ease-in-out 
+        <div className='flex flex-col items-center gap-2'>
+          <button
+            onClick={handleCreateGame}
+            disabled={loading}
+            className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer '>
+            <Image
+              src='/assets/createGameRoom2.png'
+              alt='Create Game'
+              width={200}
+              height={80}
+              className='transition-all duration-200 ease-in-out 
              group-hover:scale-105 group-hover:-translate-y-1 
              group-hover:opacity-90 group-active:scale-95'
-          />
-        </button>
+            />
+          </button>
+
+          <Link
+            href='/game/computer'
+            className='mt-3 inline-block disabled:opacity-60 disabled:cursor-not-allowed group hover:cursor-pointer '>
+            <Image
+              src='/assets/playVSComputer.png'
+              alt='Create Game'
+              width={200}
+              height={80}
+              className='transition-all duration-200 ease-in-out 
+             group-hover:scale-105 group-hover:-translate-y-1 
+             group-hover:opacity-90 group-active:scale-95'
+            />
+          </Link>
+        </div>
       ) : (
         <>
-        <button onClick={handleLogin} className='mt-3 inline-block '>
-          <Image
-            src='/assets/loginwithtwitterFinal.png'
-            alt='Log in with Twitter'
-            width={300}
-            height={80}
-            className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
-          />
-        </button>
-
-     
+          <button onClick={handleLogin} className='mt-3 inline-block '>
+            <Image
+              src='/assets/loginwithtwitterFinal.png'
+              alt='Log in with Twitter'
+              width={300}
+              height={80}
+              className='transition-all duration-200 ease-in-out hover:scale-105 hover:-translate-y-1 hover:opacity-90 hover:cursor-pointer'
+            />
+          </button>
         </>
       )}
     </div>

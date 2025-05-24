@@ -5,6 +5,8 @@ import Image from "next/image";
 import { distributeCards } from "@/lib/distributeCards";
 import Toast from "@/components/toast";
 import Header from "@/components/header";
+import modalBg from "@/public/assets/modalBG.png";
+
 const cardTypes = [
   { id: 1, name: "Dog", image: "/assets/dog.webp", points: 1000 },
   { id: 2, name: "Cat", image: "/assets/cat.jpg", points: 850 },
@@ -19,7 +21,7 @@ const generateCardImage = (id) =>
 export default function GameVsComputer() {
   const createInitialPlayers = () => {
     const players = [
-      { id: "p1", name: "Player A" },
+      { id: "p1", name: "You" },
       { id: "p2", name: "Bot B" },
       { id: "p3", name: "Bot C" },
       { id: "p4", name: "Bot D" },
@@ -44,7 +46,7 @@ export default function GameVsComputer() {
   const [toastMsg, setToastMsg] = useState("");
   const lastPassedRef = useRef(null);
   const justPassedRef = useRef(false);
-
+  const [showEndModal, setShowEndModal] = useState(false);
   const playSound = (src) => {
     const audio = new Audio(src);
     audio.play().catch(() => {});
@@ -61,6 +63,17 @@ export default function GameVsComputer() {
     window.addEventListener("resize", checkSize);
     return () => window.removeEventListener("resize", checkSize);
   }, []);
+
+  const resetGame = () => {
+    const init = createInitialPlayers();
+    setPlayers(init.fullPlayers);
+    setCurrentTurn(init.startingTurn);
+    setLastPassedCard(null);
+    setLastReceiver(null);
+    setWinner(null);
+    setToastMsg("");
+    setShowEndModal(false);
+  };
 
   useEffect(() => {
     if (winner !== null || currentTurn === 0) return;
@@ -92,6 +105,9 @@ export default function GameVsComputer() {
     playSound(
       isPlayerAWinner ? "/sounds/winSound.ogg" : "/sounds/loseSound.ogg"
     );
+
+    const timer = setTimeout(() => setShowEndModal(true), 3000);
+    return () => clearTimeout(timer);
   }, [winner]);
 
   const getSmartBotCardIndex = (botPlayer, botIndex) => {
@@ -175,9 +191,9 @@ export default function GameVsComputer() {
   if (isMobile) {
     const order = [2, 3, 1, 0]; // Bot C, Bot D, Bot B, Player A
     return (
-      <div className="bg-[#0b1e2e]">
+      <div className='bg-[#0b1e2e]'>
         <Header showHamburger={true} />
-        <div className="w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center pt-12">
+        <div className='w-full h-screen overflow-y-hidden grid grid-cols-2 justify-items-center pt-12'>
           {toastMsg && <Toast message={toastMsg} />}
 
           {order.map((index) => {
@@ -203,17 +219,16 @@ export default function GameVsComputer() {
                   winner === player.name
                     ? "ring-2 ring-yellow-400 shadow-yellow-300"
                     : ""
-                }`}
-              >
-                <p className="text-sm font-bold text-center mb-2">
+                }`}>
+                <p className='text-sm font-bold text-center mb-2'>
                   {player.name}
                   {winner === player.name && (
-                    <span className="text-yellow-400 ml-2 animate-bounce">
+                    <span className='text-yellow-400 ml-2 animate-bounce'>
                       🏆
                     </span>
                   )}
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className='grid grid-cols-2 gap-2'>
                   {cards.map((card, cardIdx) => {
                     const cardInfo = generateCardImage(card);
                     return (
@@ -226,22 +241,20 @@ export default function GameVsComputer() {
                         }`}
                         onClick={() =>
                           index === 0 && isCurrent && passCard(index, cardIdx)
-                        }
-                      >
+                        }>
                         {card !== null ? (
                           <Image
                             src={cardInfo.image}
                             alt={cardInfo.name}
                             width={80}
                             height={110}
-                            className="object-cover w-full h-full"
+                            className='object-cover w-full h-full'
                           />
                         ) : (
                           <div
                             className={`w-full h-full bg-gray-800 ${
                               isCurrent ? "shimmer2" : ""
-                            }`}
-                          ></div>
+                            }`}></div>
                         )}
                       </div>
                     );
@@ -251,6 +264,28 @@ export default function GameVsComputer() {
             );
           })}
         </div>
+        {showEndModal && (
+          <div className='fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center'>
+            <div className='relative w-[380px] h-[480px] sm:w-[420px] sm:h-[500px]'>
+              <Image
+                src={modalBg}
+                alt='Game Over'
+                fill
+                className='absolute inset-0 object-contain z-[-1] pointer-events-none'
+              />
+              <div className='relative z-10 flex flex-col items-center justify-center h-full text-black text-center space-y-5 px-6 pt-12'>
+                <h2 className='text-xl font-bold text-yellow-700'>
+                  {winner === "Player A" ? "You Won! 🏆" : `${winner} Won!`}
+                </h2>
+                <button
+                  onClick={resetGame}
+                  className='mt-4 px-6 py-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 font-semibold'>
+                  Play Again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -260,17 +295,16 @@ export default function GameVsComputer() {
 
   return (
     <div
-      className="min-h-screen text-white flex flex-col items-center justify-center p-4"
+      className='min-h-screen text-white flex flex-col items-center justify-center p-4'
       style={{
         backgroundImage: "url(/assets/background.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
-      }}
-    >
-         <Header showHamburger={true} />
+      }}>
+      <Header showHamburger={true} />
       {toastMsg && <Toast message={toastMsg} />}
 
-      <div className="relative w-[90vw] h-[80vh] rounded-xl overflow-hidden">
+      <div className='relative w-[90vw] h-[80vh] rounded-xl overflow-hidden'>
         {renderOrder.map((index) => {
           const player = players[index];
           const pos = index;
@@ -303,12 +337,11 @@ export default function GameVsComputer() {
                 winner === player.name
                   ? "ring-2 ring-yellow-400 shadow-yellow-300"
                   : ""
-              }`}
-            >
-              <p className="text-sm font-bold text-center mb-2">
+              }`}>
+              <p className='text-sm font-bold text-center mb-2'>
                 {player.name}
                 {winner === player.name && (
-                  <span className="text-yellow-400 ml-2 animate-bounce">
+                  <span className='text-yellow-400 ml-2 animate-bounce'>
                     🏆
                   </span>
                 )}
@@ -316,8 +349,7 @@ export default function GameVsComputer() {
               <div
                 className={`flex ${
                   pos === 0 ? "flex-row" : "flex-wrap justify-center"
-                } gap-2`}
-              >
+                } gap-2`}>
                 {cards.map((card, cardIdx) => {
                   const cardInfo = generateCardImage(card);
                   return (
@@ -330,15 +362,14 @@ export default function GameVsComputer() {
                       }`}
                       onClick={() =>
                         index === 0 && isCurrent && passCard(index, cardIdx)
-                      }
-                    >
+                      }>
                       {card !== null ? (
                         <Image
                           src={cardInfo.image}
                           alt={cardInfo.name}
                           width={90}
                           height={130}
-                          className="object-cover w-full h-full"
+                          className='object-cover w-full h-full'
                         />
                       ) : (
                         <div
@@ -355,6 +386,29 @@ export default function GameVsComputer() {
           );
         })}
       </div>
+
+      {showEndModal && (
+        <div className='fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center'>
+          <div className='relative w-[380px] h-[480px] sm:w-[420px] sm:h-[500px]'>
+            <Image
+              src={modalBg}
+              alt='Game Over'
+              fill
+              className='absolute inset-0 object-contain z-[-1] pointer-events-none'
+            />
+            <div className='relative z-10 flex flex-col items-center justify-center h-full text-black text-center space-y-5 px-6 pt-12'>
+              <h2 className='text-xl font-bold text-yellow-700'>
+                {winner === "Player A" ? "You Won! 🏆" : `${winner} Won!`}
+              </h2>
+              <button
+                onClick={resetGame}
+                className='mt-4 px-6 py-2 bg-yellow-400 text-black rounded-full hover:bg-yellow-500 font-semibold hover:cursor-pointer'>
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

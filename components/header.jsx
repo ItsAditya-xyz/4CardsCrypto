@@ -47,7 +47,7 @@ export default function Header({ showLogo = false, showHamburger = false }) {
   return (
     <>
       {showLogo && (
-        <Link href='/' className='absolute top-4 left-4 z-50 block'>
+        <Link href='/' className='absolute top-4 left-4 z-50 block hover:cursor-pointer'>
           <Image
             src='/assets/logo.png'
             alt='Logo'
@@ -61,7 +61,7 @@ export default function Header({ showLogo = false, showHamburger = false }) {
       {user && (
         <div className='absolute top-1 right-4 z-50 '>
           {showHamburger ? (
-            <button onClick={() => setOpenModal(true)} className='p-2'>
+            <button onClick={() => setOpenModal(true)} className='p-2 hover:cursor-pointer'>
               <Image
                 src='/assets/hamburger.png'
                 alt='Menu'
@@ -73,7 +73,7 @@ export default function Header({ showLogo = false, showHamburger = false }) {
           ) : (
             <button
               onClick={() => setOpenModal(true)}
-              className='flex items-center gap-2'>
+              className='flex items-center gap-2 hover:cursor-pointer'>
               <p className='font-medium text-gray-100 mb-2'>
                 GM, {user.user_metadata?.user_name || "Player"}
               </p>
