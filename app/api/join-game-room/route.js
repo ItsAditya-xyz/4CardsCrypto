@@ -17,6 +17,15 @@ export async function POST(req) {
 
   const { roomId } = await req.json();
 
+  if (!roomId || typeof roomId !== "string") {
+    return NextResponse.json({ error: "Invalid room ID" }, { status: 400 });
+  }
+  if (!user.user_metadata?.user_name) {
+    return NextResponse.json(
+      { error: "Missing user metadata" },
+      { status: 400 }
+    );
+  }
   const { data: room, error: roomError } = await supabaseAdmin
     .from("game_rooms")
     .select("*")
@@ -30,7 +39,10 @@ export async function POST(req) {
 
   const alreadyInRoom = room.players.some((p) => p.id === user.id);
   if (alreadyInRoom) {
-    return NextResponse.json({ message: "User already in room" }, { status: 200 });
+    return NextResponse.json(
+      { message: "User already in room" },
+      { status: 200 }
+    );
   }
 
   if (room.players.length >= 4) {
@@ -79,7 +91,11 @@ export async function POST(req) {
           });
 
         if (insertError) {
-          console.error("Failed to insert player_state for", p.user_id, insertError);
+          console.error(
+            "Failed to insert player_state for",
+            p.user_id,
+            insertError
+          );
         }
       }
     }

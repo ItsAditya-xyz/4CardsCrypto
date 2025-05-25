@@ -55,3 +55,5 @@ todo:
 
 - chat functionality to tell people to pass cards
 - nft page
+
+- found a bug where 5 animal card was there of one type and 3 cards were of another type 
