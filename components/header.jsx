@@ -163,7 +163,7 @@ export default function Header({ showLogo = false, showHamburger = false }) {
                   fill
                   className='object-contain pointer-events-none'
                 />
-                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-red-600'>
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-red-600 hover:cursor-pointer'>
                   <LogOut className='w-5 h-5' />
                   Log out
                 </span>

@@ -53,15 +53,5 @@ Let me know if you'd like to show these in-game via a rules button or modal!
 
 todo:
 
-
-
-
-- profile page showing game history!
-- ability to join free room available (public room)
 - chat functionality to tell people to pass cards
-
-
-4: 1000
-3: 800
-2: 700
-1: 500
+- nft page

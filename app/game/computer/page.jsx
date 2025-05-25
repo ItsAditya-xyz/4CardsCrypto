@@ -10,7 +10,7 @@ import playAgainImg from "@/public/assets/playAgain.png";
 
 const cardTypes = [
   { id: 1, name: "Dog", image: "/assets/dog.webp", points: 1000 },
-  { id: 2, name: "Cat", image: "/assets/cat.jpg", points: 850 },
+  { id: 2, name: "Cat", image: "/assets/cat.jpg", points: 800 },
   { id: 3, name: "Bunny", image: "/assets/bunny.jpg", points: 700 },
   { id: 4, name: "Panda", image: "/assets/panda.jpg", points: 500 },
   { id: 0, name: "Null", image: "/assets/Null.png", points: 0 },
@@ -244,13 +244,19 @@ export default function GameVsComputer() {
                           index === 0 && isCurrent && passCard(index, cardIdx)
                         }>
                         {card !== null ? (
-                          <Image
-                            src={cardInfo.image}
-                            alt={cardInfo.name}
-                            width={80}
-                            height={110}
-                            className='object-cover w-full h-full'
-                          />
+                          <div className='relative w-full h-full'>
+                            <Image
+                              src={cardInfo.image}
+                              alt={cardInfo.name}
+                              fill
+                              className='object-cover w-full h-full'
+                            />
+                            {cardInfo.points > 0 && (
+                             <div className='absolute bottom-1 right-1 bg-[#FFF1D6] backdrop-blur-sm text-[10px] px-2 py-[2px] rounded-full font-semibold text-black shadow-sm'>
+                              {cardInfo.points}
+                            </div>
+                            )}
+                          </div>
                         ) : (
                           <div
                             className={`w-full h-full bg-gray-800 ${
@@ -371,13 +377,19 @@ export default function GameVsComputer() {
                         index === 0 && isCurrent && passCard(index, cardIdx)
                       }>
                       {card !== null ? (
-                        <Image
-                          src={cardInfo.image}
-                          alt={cardInfo.name}
-                          width={90}
-                          height={130}
-                          className='object-cover w-full h-full'
-                        />
+                        <div className='relative w-full h-full'>
+                          <Image
+                            src={cardInfo.image}
+                            alt={cardInfo.name}
+                            fill
+                            className='object-cover w-full h-full'
+                          />
+                          {cardInfo.points > 0 && (
+                            <div className='absolute bottom-1 right-1 bg-[#FFF1D6] backdrop-blur-sm text-[10px] px-2 py-[2px] rounded-full font-semibold text-black shadow-sm'>
+                              {cardInfo.points}
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <div
                           className={`w-full h-full bg-gray-800 ${

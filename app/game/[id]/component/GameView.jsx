@@ -23,7 +23,16 @@ export default function GameView({
   const [isMobile, setIsMobile] = useState(false);
   const lastPassedCardRef = useRef(gameRoom?.game_state?.last_passed_card);
   const [toastMsg, setToastMsg] = useState("");
-
+  const getCardPoints = (card) => {
+    const pointsMap = {
+      1: 1000, // Dog
+      2: 800, // Cat
+      3: 700, // Bunny
+      4: 500, // Panda
+      0: 0, // Null
+    };
+    return pointsMap[parseInt(card)] || 0;
+  };
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 2000);
@@ -152,13 +161,19 @@ export default function GameView({
             : null
         } ${isWinner ? "scale-105 border-yellow-400" : ""}`}>
         {card !== null ? (
-          <Image
-            src={`/assets/${cardAssets[String(card)]}`}
-            alt='card'
-            width={100}
-            height={140}
-            className='w-full h-full object-cover'
-          />
+          <div className='relative w-full h-full'>
+            <Image
+              src={`/assets/${cardAssets[String(card)]}`}
+              alt='card'
+              fill
+              className='object-cover w-full h-full'
+            />
+            {card !== "0" && (
+              <div className='absolute bottom-1 right-1 bg-[#FFF1D6] backdrop-blur-sm text-[10px] px-2 py-[2px] rounded-full font-semibold text-black shadow-sm'>
+                {getCardPoints(card)}
+              </div>
+            )}
+          </div>
         ) : (
           <div
             className={`w-full h-full bg-gray-800 relative overflow-hidden rounded-md ${
