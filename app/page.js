@@ -8,7 +8,8 @@ import Header from "@/components/header";
 import Link from "next/link";
 import Loader from "@/components/loader";
 import emptyButton from "@/public/assets/emptyButton.png";
-import { Plus, Eye, Bot } from "lucide-react";
+import { Plus, Eye, Bot, Trophy, BadgeCheck } from "lucide-react";
+
 export default function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -76,11 +77,11 @@ export default function Home() {
       }}>
       <Header />
       <Image
-        src='/assets/logo.png'
+        src='/assets/bannerImage.png'
         alt='Game Logo'
         width={500}
         height={400}
-        className=''
+        className={loadingUser ? "mb-24": ""}
       />
 
       {loadingUser && <Loader />}
@@ -95,7 +96,7 @@ export default function Home() {
           )}
 
           {user ? (
-            <div className='flex flex-col items-center gap-2'>
+            <div className='flex flex-col items-center'>
               {/* ➕ Create Game Room */}
               <button
                 onClick={handleCreateGame}
@@ -116,7 +117,7 @@ export default function Home() {
               {/* 👁️ See Rooms */}
               <Link
                 href='/game-room'
-                className='relative w-[240px] h-[80px] group disabled:opacity-60 disabled:cursor-not-allowed hover:cursor-pointer transition-transform hover:scale-105'>
+                className='relative w-[240px] h-[80px] group hover:cursor-pointer transition-transform hover:scale-105'>
                 <Image
                   src={emptyButton}
                   alt='See Rooms'
@@ -142,6 +143,38 @@ export default function Home() {
                 <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
                   <Bot className='w-5 h-5' />
                   Play vs Computer
+                </span>
+              </Link>
+
+              {/* 🏆 Leaderboard */}
+              <Link
+                href='/leaderboard'
+                className='relative w-[240px] h-[80px] group hover:cursor-pointer transition-transform hover:scale-105'>
+                <Image
+                  src={emptyButton}
+                  alt='Leaderboard'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
+                  <Trophy className='w-5 h-5' />
+                  Leaderboard
+                </span>
+              </Link>
+
+              {/* 🃏 Card NFT */}
+              <Link
+                href='/card-nft'
+                className='relative w-[240px] h-[80px] group hover:cursor-pointer transition-transform hover:scale-105'>
+                <Image
+                  src={emptyButton}
+                  alt='Card NFT'
+                  fill
+                  className='object-contain pointer-events-none'
+                />
+                <span className='absolute inset-0 flex items-center justify-center gap-2 font-bold text-black text-lg'>
+                  <BadgeCheck className='w-5 h-5' />
+                  Card NFT
                 </span>
               </Link>
             </div>

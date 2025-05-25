@@ -63,7 +63,8 @@ export default function LeaderboardPage() {
               <li key={player.id}>
                 <Link
                   href={`/u/${player.user_name}`}
-                  className='flex items-center gap-4 bg-[#1e293b] border border-yellow-500/40 rounded-xl p-4 shadow-lg hover:bg-[#334155] transition cursor-pointer'
+                  className='flex items-center gap-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-md hover:scale-[1.015] hover:bg-white/20 transition-transform cursor-pointer'
+
                 >
                   <div className='relative w-14 h-14 shrink-0'>
                     <Image
